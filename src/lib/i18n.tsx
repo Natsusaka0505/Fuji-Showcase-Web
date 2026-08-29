@@ -12,8 +12,12 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { EN } from "./i18n-en";
+import { JA } from "./i18n-ja";
 
-export type Locale = "zh" | "en";
+export type Locale = "zh" | "en" | "ja";
+
+const DICT: Record<Locale, Record<string, string> | null> = { zh: null, en: EN, ja: JA };
+const HTML_LANG: Record<Locale, string> = { zh: "zh-Hant", en: "en", ja: "ja" };
 
 const I18nContext = createContext<{ locale: Locale; setLocale: (l: Locale) => void } | null>(null);
 
@@ -23,7 +27,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem("q9-locale");
-      if (saved === "en" || saved === "zh") setLocaleState(saved);
+      if (saved === "en" || saved === "zh" || saved === "ja") setLocaleState(saved);
     } catch {}
   }, []);
   const setLocale = (l: Locale) => {
@@ -31,7 +35,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem("q9-locale", l);
     } catch {}
-    document.documentElement.lang = l === "zh" ? "zh-Hant" : "en";
+    document.documentElement.lang = HTML_LANG[l];
   };
   return <I18nContext.Provider value={{ locale, setLocale }}>{children}</I18nContext.Provider>;
 }
@@ -41,7 +45,7 @@ export function useI18n() {
   if (!ctx) throw new Error("useI18n must be used inside I18nProvider");
   const { locale, setLocale } = ctx;
   const t = (zh: string, vars?: Record<string, string | number>): string => {
-    let s = locale === "en" ? (EN[zh] ?? zh) : zh;
+    let s = DICT[locale]?.[zh] ?? zh;
     if (vars) {
       for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
     }

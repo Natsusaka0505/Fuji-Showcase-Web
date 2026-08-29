@@ -69,11 +69,16 @@ function Shell() {
               {t("重設")}
             </button>
           )}
-          <button type="button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
-            aria-label={locale === "zh" ? "Switch to English" : "切換為中文"}
-            className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-bold text-ink-dim transition-colors hover:border-ink-dim hover:text-ink">
-            {locale === "zh" ? "EN" : "中"}
-          </button>
+          <div className="flex shrink-0 overflow-hidden rounded-full border border-border" role="group" aria-label="Language">
+            {(["zh", "en", "ja"] as const).map((l) => (
+              <button key={l} type="button" onClick={() => setLocale(l)} aria-pressed={locale === l}
+                className={`px-2 py-1 text-xs font-bold transition-colors ${
+                  locale === l ? "bg-gold text-bg" : "text-ink-dim hover:text-ink"
+                }`}>
+                {l === "zh" ? "中" : l === "en" ? "EN" : "日"}
+              </button>
+            ))}
+          </div>
           <button type="button" onClick={() => setDrawerOpen((o) => !o)}
             aria-expanded={drawerOpen}
             className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-ink-dim transition-colors hover:text-ink lg:hidden">

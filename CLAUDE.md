@@ -92,9 +92,9 @@ score_e = haversine(o,d)/20000 + λ·port_risk[dest]/max + |N(0,0.03)|market
 
 **口徑**:非 0.4 的 λ = 衍生能量地貌。`store.derived = derivedPair || λ≠0.4`,所有已發表數字的顯示都 gate 在 `derived` 上(不是 `derivedPair`)。
 
-### i18n(中英切換)
+### i18n(中/EN/日 切換)
 
-自製 gettext 式輕量 i18n,無外部套件:`src/lib/i18n.tsx`(context + `t()`)+ `src/lib/i18n-en.ts`(平面 zh→en 字典)。**中文原文就是 key**,缺譯 fallback 中文永不破版;`{var}` 佔位符查表後才插值。locale 存 localStorage(`q9-locale`),header 的 EN/中 按鈕切換。資料檔內的顯示文字(cvar 航線名、algo 列、meta.caveat、showcase 情境標籤)也走 `t(變數)`,字典有對應條目。
+自製 gettext 式輕量 i18n,無外部套件:`src/lib/i18n.tsx`(context + `t()`)+ `src/lib/i18n-en.ts` / `i18n-ja.ts`(平面 zh→en / zh→ja 字典,key 集合相同)。**中文原文就是 key**,缺譯 fallback 中文永不破版;`{var}` 佔位符查表後才插值。locale 存 localStorage(`q9-locale`),header 三段鈕 中/EN/日 切換,`<html lang>` 同步。聯運分頁的運輸方式名稱走 MODE_ZH/MODE_JA 對照表(EN 用原文)。資料檔內的顯示文字(cvar 航線名、algo 列、meta.caveat、showcase 情境標籤)也走 `t(變數)`,字典有對應條目。
 
 `verify:i18n` 掃全部元件的 `t("…")` + 資料檔字串,斷言:每個 key 有 EN 條目、佔位符翻譯後仍在、字典無孤兒條目。**新增任何 UI 文字都要包 `t()` 並補字典,verify 會擋。**
 
@@ -129,7 +129,7 @@ npm run verify     # engine + risk + algos + typecheck
 
 - `verify:engine` — TS 求解器 vs Python 預算結果,**137 個 penalty 掃描點逐點比對**(不是只比端點),含可行性轉折、勝出航線、作弊態計數;另掃 **72 組起終點**與推導 rhs 對帳;score 拆解:λ=0.4 重組 ≤1e-12、16 個 market 殘差全在 [0, 0.12]
 - `verify:risk` — vs 報告發表的四條航線平均值與 CVaR95,含 46% 比值斷言;災害升級三斷言:空集合 bit-identical、只影響過港航線、closed-form 與模擬 <5% 吻合;**vs port_hazards_v2.json 原始檔**:擬合 7.4979 vs 原始 7.5、0.7934 vs 0.792、9 港逐欄一致(原始檔 λ 隱含 11.500 年目錄,擬合 11.504)
-- `verify:i18n` — i18n 完整性:339 個 key 全有 EN 條目、佔位符存活、無孤兒
+- `verify:i18n` — i18n 完整性:339 個 key 在 EN 與 JA 字典全有條目、佔位符存活、無孤兒
 - `verify:showcase` — 聯運分頁雙層對帳:手抄 8 邊分項加總與 16 組合排行 vs 官方前 12 名;全網路 256 邊分項加總、6 條走廊分數重算、手抄 vs CSV 逐位(≤1e-6)、Rank 1 = 0.928146
 - `verify:algos` — 檢查**行為**而非數字:振幅峰值是否落在理論位置、過轉是否真的損失機率、GAS 是否在多數種子命中、**是否曾宣稱低於真實最優**、QAOA 收斂是否單調
 

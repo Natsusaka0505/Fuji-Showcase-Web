@@ -29,12 +29,14 @@ type Weights = Record<CompKey, number>;
 const DEFAULT_W: Weights = { alpha: 1, beta: 1, gamma1: 1, gamma2: 1, gamma3: 1 };
 
 const MODE_ZH: Record<string, string> = { Road: "公路", Rail: "鐵路", Air: "空運", Sea: "海運" };
+const MODE_JA: Record<string, string> = { Road: "道路", Rail: "鉄道", Air: "航空", Sea: "海運" };
 
 export function ShowcasePanel() {
   const { t, locale } = useI18n();
   const [w, setW] = useState<Weights>(DEFAULT_W);
   const isDefaultW = COMP.every((c) => w[c.key] === 1);
-  const modeName = (m: string) => (locale === "zh" ? (MODE_ZH[m] ?? m) : m);
+  const modeName = (m: string) =>
+    locale === "zh" ? (MODE_ZH[m] ?? m) : locale === "ja" ? (MODE_JA[m] ?? m) : m;
 
   // Corridor ranking over the full network: each pair takes its best mode under
   // the current weighting, so both the winning modes and the path order move.
@@ -101,7 +103,7 @@ export function ShowcasePanel() {
               <div key={e.mode} className="mb-1.5 flex items-center gap-2">
                 <span className="w-16 shrink-0 text-xs text-ink">
                   {modeName(e.mode)}
-                  {locale === "zh" && <span className="ml-1 text-[9px] text-ink-faint">{e.mode}</span>}
+                  {locale !== "en" && <span className="ml-1 text-[9px] text-ink-faint">{e.mode}</span>}
                 </span>
                 <span className="flex h-[10px] min-w-0 flex-1 overflow-hidden rounded bg-surface-alt">
                   {COMP.map((c) => (

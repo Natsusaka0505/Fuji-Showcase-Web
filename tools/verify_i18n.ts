@@ -10,6 +10,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { EN } from "../src/lib/i18n-en.ts";
+import { JA } from "../src/lib/i18n-ja.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DATA = join(ROOT, "src/data/q9_data");
@@ -47,24 +48,26 @@ const check = (name: string, ok: boolean, detail = "") => {
   if (!ok) failures++;
 };
 
-const missing = [...keys].filter((k) => !(k in EN));
-check(`every used key has an EN entry (${keys.size} keys)`, missing.length === 0);
-for (const k of missing) console.log(`        missing: ${k.slice(0, 60)}`);
+for (const [name, dict] of [["EN", EN], ["JA", JA]] as const) {
+  const missing = [...keys].filter((k) => !(k in dict));
+  check(`every used key has a ${name} entry (${keys.size} keys)`, missing.length === 0);
+  for (const k of missing) console.log(`        missing: ${k.slice(0, 60)}`);
 
-const phBad: string[] = [];
-for (const k of keys) {
-  const en = EN[k];
-  if (!en) continue;
-  for (const m of k.matchAll(/\{(\w+)\}/g)) {
-    if (!en.includes(`{${m[1]}}`)) phBad.push(`${m[0]} lost in: ${k.slice(0, 40)}`);
+  const phBad: string[] = [];
+  for (const k of keys) {
+    const tr = dict[k];
+    if (!tr) continue;
+    for (const m of k.matchAll(/\{(\w+)\}/g)) {
+      if (!tr.includes(`{${m[1]}}`)) phBad.push(`${m[0]} lost in: ${k.slice(0, 40)}`);
+    }
   }
-}
-check("every {placeholder} survives translation", phBad.length === 0);
-for (const p of phBad) console.log(`        ${p}`);
+  check(`every {placeholder} survives ${name} translation`, phBad.length === 0);
+  for (const p of phBad) console.log(`        ${p}`);
 
-const orphans = Object.keys(EN).filter((k) => !keys.has(k));
-check("no orphaned dictionary entries", orphans.length === 0, `${orphans.length} orphans`);
-for (const o of orphans) console.log(`        orphan: ${o.slice(0, 60)}`);
+  const orphans = Object.keys(dict).filter((k) => !keys.has(k));
+  check(`no orphaned ${name} entries`, orphans.length === 0, `${orphans.length} orphans`);
+  for (const o of orphans) console.log(`        orphan: ${o.slice(0, 60)}`);
+}
 
 console.log(failures ? `\n${failures} FAILURE(S)` : "\nall checks passed");
 process.exit(failures ? 1 : 0);
