@@ -1,0 +1,16 @@
+{
+ "problem_name": "q9_disaster_aware_40q",
+ "level": "formal_40qubit_mode",
+ "source_port": "Singapore",
+ "target_port": "Los Angeles",
+ "n_qubits": 16,
+ "penalty_A_default": 8.650258766608507,
+ "ising_offset": 98.95092885998875,
+ "risk_lambda_default": 0.4,
+ "num_pauli_terms": 65,
+ "num_linear_terms": 16,
+ "num_quadratic_terms": 49,
+ "model_formula": "ising(x) = sum_e score_e*x_e + A*sum_v (flow_v(x)-rhs_v)^2 - ising_offset",
+ "model_verified_max_abs_err": 2.2737367544323206e-13,
+ "caveat": "此 16q ising 的最佳值為 -97.4936。筆記中的 0.9281 / corridor rank 屬另一個 local reduced QUBO,兩者不可同圖並列。"
+}

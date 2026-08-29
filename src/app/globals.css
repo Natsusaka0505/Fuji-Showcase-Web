@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/*
+ * Championship palette from the report: deep navy #1f3a5f and gold #d4a017.
+ * Exposed as Tailwind v4 theme tokens so `bg-surface`, `text-gold` etc. work.
+ */
+@theme {
+  --color-bg: #0d1620;
+  --color-surface: #152230;
+  --color-surface-alt: #1b2c3e;
+  --color-border: #25384c;
+  --color-navy: #1f3a5f;
+  --color-gold: #d4a017;
+  --color-gold-dim: #8a6a10;
+  --color-ink: #e8eef5;
+  --color-ink-dim: #8ba0b6;
+  --color-ink-faint: #5b7186;
+  --color-good: #3fb96b;
+  --color-warn: #e0922f;
+  --color-bad: #e05a4f;
+  --color-quantum: #5eb3e8;
+  --color-grid: #1f3346;
+
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Range inputs are the primary control here, so they get styled rather than
+   left to each browser's default. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--track-color, var(--color-gold));
+  cursor: pointer;
+  border: 2px solid var(--color-bg);
+  box-shadow: 0 0 0 1px var(--track-color, var(--color-gold));
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--track-color, var(--color-gold));
+  cursor: pointer;
+  border: 2px solid var(--color-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

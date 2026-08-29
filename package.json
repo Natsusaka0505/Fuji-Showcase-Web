@@ -1,0 +1,32 @@
+{
+  "name": "q-logistics",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "lint": "eslint",
+    "precompute": "python3 tools/precompute.py",
+    "start": "next start",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.tools.json",
+    "verify": "npm run verify:engine && npm run verify:risk && npm run verify:algos && npm run typecheck",
+    "verify:algos": "node --experimental-strip-types tools/verify_algos.ts",
+    "verify:engine": "node --experimental-strip-types tools/verify_engine.ts",
+    "verify:risk": "node --experimental-strip-types tools/verify_risk.ts"
+  },
+  "dependencies": {
+    "next": "16.3.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

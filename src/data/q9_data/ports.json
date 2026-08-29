@@ -1,0 +1,101 @@
+[
+ {
+  "name": "Colombo",
+  "iso": "CMB",
+  "lat": 6.9271,
+  "lon": 79.8612,
+  "port_risk": 22.0613,
+  "quake_m5_300km": 0,
+  "typhoon_closure_days_per_year": 0.8,
+  "conflict_multiplier": 1.0,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=6.9271&longitude=79.8612&maxradiuskm=300"
+ },
+ {
+  "name": "Hong Kong",
+  "iso": "HKG",
+  "lat": 22.3193,
+  "lon": 114.1694,
+  "port_risk": 43.3147,
+  "quake_m5_300km": 0,
+  "typhoon_closure_days_per_year": 3.818,
+  "conflict_multiplier": 1.0,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=22.3193&longitude=114.1694&maxradiuskm=300"
+ },
+ {
+  "name": "Kaohsiung",
+  "iso": "KHH",
+  "lat": 22.6163,
+  "lon": 120.2861,
+  "port_risk": 52.3267,
+  "quake_m5_300km": 243,
+  "typhoon_closure_days_per_year": 6.0,
+  "conflict_multiplier": 1.0,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=22.6163&longitude=120.2861&maxradiuskm=300"
+ },
+ {
+  "name": "Los Angeles",
+  "iso": "LAX",
+  "lat": 33.7395,
+  "lon": -118.261,
+  "port_risk": 21.7765,
+  "quake_m5_300km": 12,
+  "typhoon_closure_days_per_year": 0.3,
+  "conflict_multiplier": 1.0,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=33.7395&longitude=-118.261&maxradiuskm=300"
+ },
+ {
+  "name": "Piraeus",
+  "iso": "PIR",
+  "lat": 37.942,
+  "lon": 23.6465,
+  "port_risk": 20.8256,
+  "quake_m5_300km": 79,
+  "typhoon_closure_days_per_year": 0.1,
+  "conflict_multiplier": 1.0,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=37.942&longitude=23.6465&maxradiuskm=300"
+ },
+ {
+  "name": "Rotterdam",
+  "iso": "RTM",
+  "lat": 51.9225,
+  "lon": 4.4792,
+  "port_risk": 8.1418,
+  "quake_m5_300km": 0,
+  "typhoon_closure_days_per_year": 0.2,
+  "conflict_multiplier": 1.0,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=51.9225&longitude=4.4792&maxradiuskm=300"
+ },
+ {
+  "name": "Shanghai",
+  "iso": "SHA",
+  "lat": 31.2304,
+  "lon": 121.4737,
+  "port_risk": 36.6818,
+  "quake_m5_300km": 1,
+  "typhoon_closure_days_per_year": 2.364,
+  "conflict_multiplier": 1.0,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=31.2304&longitude=121.4737&maxradiuskm=300"
+ },
+ {
+  "name": "Singapore",
+  "iso": "SIN",
+  "lat": 1.2644,
+  "lon": 103.84,
+  "port_risk": 14.5259,
+  "quake_m5_300km": 0,
+  "typhoon_closure_days_per_year": 0.091,
+  "conflict_multiplier": 1.0,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=1.2644&longitude=103.84&maxradiuskm=300"
+ },
+ {
+  "name": "Suez/Port Said",
+  "iso": "SUZ",
+  "lat": 31.2653,
+  "lon": 32.3019,
+  "port_risk": 23.1334,
+  "quake_m5_300km": 0,
+  "typhoon_closure_days_per_year": 0.0,
+  "conflict_multiplier": 1.43,
+  "usgs_verify_url": "https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&latitude=31.2653&longitude=32.3019&maxradiuskm=300"
+ }
+]

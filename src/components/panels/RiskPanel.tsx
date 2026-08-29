@@ -1,0 +1,101 @@
+"use client";
+
+import { TailChart, Bar } from "@/components/charts";
+import { Card, Stat, Chip, Route, Slider, Toggle, Caveat, Prose } from "@/components/ui";
+import { useStore } from "@/lib/store";
+import { cvar, fmtUsd } from "@/data";
+
+export function RiskPanel() {
+  const { params, setRisk, routeRisk, benchmarkRisks, solution } = useStore();
+  const R = params.risk;
+
+  const maxCvar = Math.max(...benchmarkRisks.map((r) => r.cvarUsd));
+  const lowest = benchmarkRisks.reduce((a, b) => (b.cvarUsd < a.cvarUsd ? b : a));
+  const suez = benchmarkRisks.find((r) => r.name === "蘇伊士線");
+  const ratio = suez ? lowest.cvarUsd / suez.cvarUsd : NaN;
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-2">
+      {routeRisk && solution.bestClean && (
+        <Card
+          title="目前航線的風險"
+          subtitle={`${R.nScenarios.toLocaleString()} 次情境模擬｜${R.horizonDays} 天航程窗口`}
+          right={<Chip label={`CVaR${(R.cvarQuantile * 100).toFixed(0)}`} tone="bad" />}
+        >
+          <Route iso={solution.bestClean.routeIso} className="mb-3" />
+          <TailChart samples={routeRisk.samples} cvar={routeRisk.cvarUsd} mean={routeRisk.meanUsd} />
+          <div className="mt-2 flex gap-3">
+            <Stat label="平均成本" value={fmtUsd(routeRisk.meanUsd)} tone="gold" />
+            <Stat label="CVaR" value={fmtUsd(routeRisk.cvarUsd)} tone="bad" />
+            <Stat label="平均延誤" value={routeRisk.meanDelayDays.toFixed(2)} unit="天" />
+          </div>
+          <Prose>
+            紅色是最壞 {((1 - R.cvarQuantile) * 100).toFixed(0)}% 的情境。CVaR 回答的不是「平均要花多少」,
+            而是「運氣最差時我會慘到什麼程度」—— 壓垮船公司的通常是極端事件,不是平均。
+          </Prose>
+        </Card>
+      )}
+
+      <Card
+        title="四條航線對比"
+        subtitle="同一組參數下即時重算"
+        right={<Chip label={`最低 ${lowest.name}`} tone="good" />}
+      >
+        {benchmarkRisks.map((r) => (
+          <Bar
+            key={r.name}
+            label={r.name}
+            value={r.cvarUsd}
+            max={maxCvar}
+            color={r.name === lowest.name ? "var(--color-good)" : "var(--color-bad)"}
+            caption={fmtUsd(r.cvarUsd)}
+            highlight={r.name === lowest.name}
+          />
+        ))}
+        <div className="mt-3 flex gap-3">
+          <Stat label="最低 / 蘇伊士" value={`${(ratio * 100).toFixed(0)}%`} tone="good" />
+          <Stat label="風險降幅" value={`${((1 - ratio) * 100).toFixed(0)}%`} tone="good" />
+        </div>
+        <Prose>
+          加入真實災害資料後,避開蘇伊士的地中海線尾部風險最低。真實資料直接改變了航線的風險排序 ——
+          這正是「災害感知最佳化」的商業價值。
+        </Prose>
+      </Card>
+
+      <Card title="風險參數" subtitle="調整後上方圖表即時更新" className="xl:col-span-2">
+        <div className="grid gap-x-8 md:grid-cols-2 xl:grid-cols-3">
+          <Slider label="每日延誤成本" value={R.dailyDelayCostUsd} min={50000} max={600000} step={1000}
+            onChange={(v) => setRisk({ dailyDelayCostUsd: v })} format={fmtUsd}
+            hint="20,000 TEU 貨櫃輪;Drewry/Alphaliner 推算,estimate 級" />
+          <Slider label="航程窗口" value={R.horizonDays} min={7} max={90} step={1}
+            onChange={(v) => setRisk({ horizonDays: v })} format={(v) => `${v.toFixed(0)} 天`}
+            hint="暴露在災害風險下的時間長度" />
+          <Slider label="CVaR 分位" value={R.cvarQuantile} min={0.8} max={0.99} step={0.01}
+            onChange={(v) => setRisk({ cvarQuantile: v })} format={(v) => `${(v * 100).toFixed(0)}%`}
+            hint="看最壞的百分之幾" tone="bad" />
+          <Slider label="蘇伊士衝突係數" value={R.suezConflictMultiplier} min={1} max={3} step={0.01}
+            onChange={(v) => setRisk({ suezConflictMultiplier: v })} format={(v) => `${v.toFixed(2)}×`}
+            hint="1.00 = 現況(已含紅海危機);1.43 = 進一步升級" tone="warn" />
+          <Slider label="颱風強度" value={R.typhoonScale} min={0} max={3} step={0.05}
+            onChange={(v) => setRisk({ typhoonScale: v })} format={(v) => `${v.toFixed(2)}×`}
+            hint="JMA 關港天數的縮放" />
+          <Slider label="地震頻率" value={R.quakeScale} min={0} max={3} step={0.05}
+            onChange={(v) => setRisk({ quakeScale: v })} format={(v) => `${v.toFixed(2)}×`}
+            hint="USGS 地震年率的縮放" />
+          <Slider label="情境數" value={R.nScenarios} min={1000} max={50000} step={1000}
+            onChange={(v) => setRisk({ nScenarios: v })} format={(v) => v.toLocaleString()}
+            hint="越多越穩定;50,000 仍在 10 ms 內" tone="quantum" />
+          <div className="self-end">
+            <Toggle label="荷莫茲海峽封鎖" value={R.hormuzBlockade}
+              onChange={(v) => setRisk({ hormuzBlockade: v })}
+              hint="繞好望角 +12 天;2026-02 事實封鎖情境" />
+          </div>
+        </div>
+        <Caveat>
+          模型結構由報告的四條航線 CVaR 表回歸還原:平均延誤誤差 0.15%,尾部形狀以 2 個參數擬合、
+          RMS {cvar.mc_model.tail_fit_rms_err_pct}%。每日延誤成本為 estimate 級,非官方統計。
+        </Caveat>
+      </Card>
+    </div>
+  );
+}

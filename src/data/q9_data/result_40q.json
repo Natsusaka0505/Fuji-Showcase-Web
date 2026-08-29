@@ -1,0 +1,61 @@
+{
+ "algorithm": "GAS_GWG",
+ "n_key": 16,
+ "n_val": 24,
+ "total_qubits": 40,
+ "mpi_processes": 4096,
+ "budget": 1,
+ "iters_run": 1,
+ "shots": 64,
+ "seed": 7,
+ "warm_start_y0": -96.0,
+ "m_max": 2.0,
+ "best_objective": -77.40201425721322,
+ "best_x": [
+  1,
+  0,
+  1,
+  1,
+  0,
+  0,
+  1,
+  0,
+  1,
+  0,
+  1,
+  1,
+  0,
+  1,
+  0,
+  1
+ ],
+ "baseline": null,
+ "gap_to_baseline": null,
+ "feasible": false,
+ "route": [
+  "Singapore",
+  "Suez/Port Said",
+  "Rotterdam"
+ ],
+ "route_complete": false,
+ "n_edges": 9,
+ "clean_route": false,
+ "hit_best_known": 0,
+ "wallclock_sec": 158991.01543711405,
+ "complete": true,
+ "trail": [
+  {
+   "t": 0,
+   "r": 1,
+   "sampled": -77.402014,
+   "y": -96.0,
+   "best": -77.402014,
+   "m_rot": 1.143,
+   "sec": 158991.0
+  }
+ ],
+ "mode": "ising",
+ "problem": "q9_disaster_aware_40q",
+ "scale_S": 6911.141647000245,
+ "corridor": "Singapore->Los Angeles"
+}

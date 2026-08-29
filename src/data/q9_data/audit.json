@@ -1,0 +1,32 @@
+{
+ "sources": [
+  {
+   "id": "quake",
+   "org": "U.S. Geological Survey",
+   "dataset": "ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service",
+   "url": "https://earthquake.usgs.gov/fdsnws/event/1/",
+   "accessed": "2026-07-04"
+  },
+  {
+   "id": "typhoon",
+   "org": "Japan Meteorological Agency",
+   "dataset": "RSMC Tokyo - Typhoon Center, Best Track Data",
+   "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/besttrack.html",
+   "accessed": "2026-07-04"
+  },
+  {
+   "id": "suez",
+   "org": "Suez Canal Authority / IMF PortWatch",
+   "dataset": "SCA chairman statement 2025-04; 2024 transits 13,213 vs 2023 26,434 (-50%)",
+   "url": "https://portwatch.imf.org/",
+   "accessed": "2026-07-04"
+  },
+  {
+   "id": "hormuz",
+   "org": "U.S. Energy Information Administration",
+   "dataset": "World Oil Transit Chokepoints — Strait of Hormuz (~20 Mb/d, 94 ships/day)",
+   "url": "https://www.eia.gov/",
+   "accessed": "2026-07-04"
+  }
+ ]
+}

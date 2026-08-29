@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "jsx": "preserve"
+  },
+  "include": [
+    "tools",
+    "src/engine"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

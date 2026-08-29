@@ -1,0 +1,78 @@
+{
+ "source": "Q9-筆記庫/戰報-Champion-Report/蒙地卡羅-CVaR-風險分析.md",
+ "n_scenarios": 10000,
+ "horizon_days": 30,
+ "mc_model": {
+  "formula": "mean_delay_days = w*sum(typhoon_days_per_year) + quake_impact_days*w*sum(quake_count/catalog_years) + suez_delay_days*[route passes Suez]",
+  "window_fraction_w": 0.0821917808219178,
+  "catalog_years": 11.504,
+  "quake_impact_days": 0.7934,
+  "suez_delay_days": 7.4979,
+  "event_duration_shape_k": 2.0,
+  "typhoon_event_mean_days": 1.0,
+  "suez_delay_deterministic": true,
+  "tail_fit_rms_err_pct": 3.1,
+  "hormuz_extra_days": 12.0,
+  "hormuz_war_premium_pct": [
+   0.3,
+   10.0
+  ],
+  "fit_max_abs_err_pct": 0.2
+ },
+ "daily_delay_cost_usd": 267000,
+ "cost_basis": "20,000 TEU;Drewry/Alphaliner 推算,estimate 級",
+ "routes": [
+  {
+   "name": "蘇伊士線",
+   "route_iso": [
+    "SIN",
+    "SUZ",
+    "RTM",
+    "LAX"
+   ],
+   "mean_usd": 2030000,
+   "cvar95_usd": 2440000,
+   "cvar95_hormuz_usd": 2540000
+  },
+  {
+   "name": "高雄可倫坡線",
+   "route_iso": [
+    "SIN",
+    "KHH",
+    "CMB",
+    "SUZ",
+    "RTM",
+    "LAX"
+   ],
+   "mean_usd": 2550000,
+   "cvar95_usd": 3770000,
+   "cvar95_hormuz_usd": 3940000
+  },
+  {
+   "name": "香港蘇伊士線",
+   "route_iso": [
+    "SIN",
+    "HKG",
+    "SUZ",
+    "RTM",
+    "LAX"
+   ],
+   "mean_usd": 2120000,
+   "cvar95_usd": 2650000,
+   "cvar95_hormuz_usd": 2800000
+  },
+  {
+   "name": "地中海線",
+   "route_iso": [
+    "SIN",
+    "HKG",
+    "CMB",
+    "PIR",
+    "LAX"
+   ],
+   "mean_usd": 250000,
+   "cvar95_usd": 1120000,
+   "cvar95_hormuz_usd": 1190000
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "anchor_cost": -97.49363014104011,
+ "rows": [
+  {
+   "algo": "暴力解 exact",
+   "best_cost": -97.4936,
+   "ratio": 1.0,
+   "seconds": 0.06,
+   "feasible": true
+  },
+  {
+   "algo": "QAOA (量子)",
+   "best_cost": -97.4936,
+   "ratio": 1.0,
+   "seconds": 21.0,
+   "feasible": true,
+   "note": "命中全域最佳解;執行時間 12-30s"
+  },
+  {
+   "algo": "模擬退火 SA",
+   "best_cost": -96.8297,
+   "ratio": 0.9932,
+   "seconds": 6.28,
+   "feasible": true
+  },
+  {
+   "algo": "Grover GAS (煙霧版)",
+   "best_cost": -44.5631,
+   "ratio": null,
+   "seconds": 222.89,
+   "feasible": false,
+   "note": "feasible=False,近似比不適用,列 —"
+  }
+ ],
+ "convergence_16q": {
+  "iters": 20,
+  "start": -0.35,
+  "end": -44.7879,
+  "note": "僅端點有紀錄;完整 20 點曲線在缺失的 bundle 內"
+ }
+}
