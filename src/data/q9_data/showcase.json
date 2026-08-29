@@ -1,0 +1,48 @@
+{
+  "source": "q9_benchmark_champion_colab_ok.ipynb 內嵌輸出(cells 12/14),上游 repo 根目錄",
+  "instance": {
+    "name": "formal_showcase_mode",
+    "variant": "fixed_showcase_same_path_different_modes",
+    "n_vars": 8,
+    "n_pauli_terms": 36,
+    "n_combinations": 16
+  },
+  "reduced_instance": {
+    "name": "reduced_pair_level",
+    "n_vars": 14,
+    "n_pauli_terms": 59
+  },
+  "corridor": ["Singapore", "Rotterdam", "Los Angeles"],
+  "pairs": ["Singapore->Rotterdam", "Rotterdam->Los Angeles"],
+  "published_optimum": 0.928146,
+  "published_rank_totals": [
+    0.928146, 0.937526, 0.947319, 0.955863, 0.967920, 0.976167,
+    0.977299, 0.985546, 0.987092, 0.993777, 0.995340, 0.995636
+  ],
+  "weights_note": "H_Q9 = α·cost + β·time + γ1·geo + γ2·port + γ3·weather。分項欄位是「權重×正規化分項」的合成值(*_q9_mean),Σ分項 == edge_score_q9 已逐邊驗證(≤2e-6,顯示截斷)。滑桿是分項的相對縮放,絕對 α/β/γ 值不在筆記本輸出內。",
+  "edges": [
+    { "pair": "Singapore->Rotterdam", "mode": "Road", "score": 0.340976, "alpha": 0.212480, "beta": 0.011397, "gamma1": 0.083253, "gamma2": 0.008321, "gamma3": 0.025525, "distance_km": 7230.301023, "lead_time_days": 10.005947 },
+    { "pair": "Singapore->Rotterdam", "mode": "Rail", "score": 0.380750, "alpha": 0.224666, "beta": 0.019821, "gamma1": 0.101323, "gamma2": 0.008590, "gamma3": 0.026350, "distance_km": 6441.419242, "lead_time_days": 17.149332 },
+    { "pair": "Singapore->Rotterdam", "mode": "Air", "score": 0.388997, "alpha": 0.229760, "beta": 0.001480, "gamma1": 0.118380, "gamma2": 0.009681, "gamma3": 0.029696, "distance_km": 9077.958360, "lead_time_days": 1.595987 },
+    { "pair": "Singapore->Rotterdam", "mode": "Sea", "score": 0.406607, "alpha": 0.226781, "beta": 0.063218, "gamma1": 0.081937, "gamma2": 0.008524, "gamma3": 0.026148, "distance_km": 8725.300146, "lead_time_days": 53.949012 },
+    { "pair": "Rotterdam->Los Angeles", "mode": "Rail", "score": 0.587170, "alpha": 0.232109, "beta": 0.026083, "gamma1": 0.098849, "gamma2": 0.085423, "gamma3": 0.144706, "distance_km": 9260.778622, "lead_time_days": 22.343433 },
+    { "pair": "Rotterdam->Los Angeles", "mode": "Road", "score": 0.596549, "alpha": 0.217196, "beta": 0.014055, "gamma1": 0.134799, "gamma2": 0.085573, "gamma3": 0.144927, "distance_km": 8242.446706, "lead_time_days": 12.144541 },
+    { "pair": "Rotterdam->Los Angeles", "mode": "Air", "score": 0.606343, "alpha": 0.234963, "beta": 0.001706, "gamma1": 0.123508, "gamma2": 0.096273, "gamma3": 0.149893, "distance_km": 8436.250531, "lead_time_days": 1.676464 },
+    { "pair": "Rotterdam->Los Angeles", "mode": "Sea", "score": 0.614886, "alpha": 0.223621, "beta": 0.059102, "gamma1": 0.103073, "gamma2": 0.085152, "gamma3": 0.143940, "distance_km": 8257.382110, "lead_time_days": 51.057442 }
+  ],
+  "scenarios": [
+    { "name": "base", "label": "基準情境", "best_objective": 0.928146, "instance": "formal_showcase_mode / reduced_pair_level", "note": "鹿特丹線(Road + Rail)最優;Exact、QAOA、古典最短路一致。" },
+    { "name": "rotterdam_port_shock", "label": "鹿特丹港衝擊", "best_objective": 0.940109, "instance": "reduced_pair_level", "note": "鹿特丹線失寵,最優改為 0.9401 —— 對應筆記排行第 2 名漢堡線的分數。QAOA 與古典最短路一致。" },
+    { "name": "showcase_weather_shock", "label": "天氣衝擊", "best_objective": 0.940109, "instance": "reduced_pair_level", "note": "天氣分項加壓後最優同樣移到 0.9401。" }
+  ],
+  "algos": [
+    { "label": "Exact_NumPy",             "runs": 1, "feasible_rate": 1.0,      "hit_rate": 1.0,      "best": 0.928146, "median": 0.928146, "std": null,     "depth": null, "two_qubit_gates": null },
+    { "label": "QAOA_p1_COBYLA",          "runs": 3, "feasible_rate": 1.0,      "hit_rate": 1.0,      "best": 0.928146, "median": 0.928146, "std": 0.0,      "depth": 17,   "two_qubit_gates": 28 },
+    { "label": "QAOA_p2_COBYLA",          "runs": 3, "feasible_rate": 1.0,      "hit_rate": 1.0,      "best": 0.928146, "median": 0.928146, "std": 0.0,      "depth": 27,   "two_qubit_gates": 56 },
+    { "label": "QAOA_p2_SPSA",            "runs": 3, "feasible_rate": 0.666667, "hit_rate": 0.666667, "best": 0.928146, "median": 0.932836, "std": 0.006632, "depth": 27,   "two_qubit_gates": 56 },
+    { "label": "QAOA_p3_COBYLA",          "runs": 3, "feasible_rate": 1.0,      "hit_rate": 1.0,      "best": 0.928146, "median": 0.928146, "std": 0.016002, "depth": 37,   "two_qubit_gates": 84 },
+    { "label": "WarmStartQAOA_p2_COBYLA", "runs": 3, "feasible_rate": 1.0,      "hit_rate": 1.0,      "best": 0.928146, "median": 0.928146, "std": 0.0,      "depth": 2,    "two_qubit_gates": 0 },
+    { "label": "ADMM",                    "runs": 1, "feasible_rate": 0.0,      "hit_rate": 0.0,      "best": null,     "median": null,     "std": null,     "depth": null, "two_qubit_gates": null },
+    { "label": "Grover_GAS",              "runs": 3, "feasible_rate": 0.0,      "hit_rate": 0.0,      "best": null,     "median": null,     "std": null,     "depth": null, "two_qubit_gates": null }
+  ]
+}

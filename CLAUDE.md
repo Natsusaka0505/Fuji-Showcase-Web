@@ -69,6 +69,10 @@ ising(x) = Σ score_e · x_e + A · Σ_v (flow_v(x) − rhs_v)² − offset
 
 排行分頁「風險 CVaR」模式對每條合法航線各跑一次 MC,情境數 cap 4,000 維持拖曳流暢。**營運分數與風險 USD 是兩套量綱,分開呈現、絕不合成單一指標** —— score→USD 換算沒有依據(見口徑紀律 5)。
 
+### 0.9281 聯運分頁(showcase.json)
+
+「聯運」分頁展示 Colab benchmark 的 local reduced 實例(8 mode-edge、36 Pauli)。資料**手抄自 `q9_benchmark_champion_colab_ok.ipynb` 內嵌輸出**(上游 repo 根目錄,cells 12/14),是唯一分項齊全的實例:Σ(α+β+γ₁+γ₂+γ₃) == edge_score 逐邊成立(≤3e-6,6 位小數截斷)。權重滑桿在此實現 —— 語意是**分項相對縮放**(分項已內含權重,絕對 α/β/γ 值不在輸出裡)。0.928146 = SIN→RTM|Road (0.340976) + RTM→LAX|Rail (0.587170)。災害情境卡(port shock → 0.940109)與演算法表為固定紀錄,衝擊量級定義在 bundle CSV 內、無法即時重算。verify:showcase 鎖住分項加總與前 12 名排行對帳。
+
 ---
 
 ## 不可違反的口徑紀律
@@ -94,6 +98,7 @@ npm run verify     # engine + risk + algos + typecheck
 
 - `verify:engine` — TS 求解器 vs Python 預算結果,**137 個 penalty 掃描點逐點比對**(不是只比端點),含可行性轉折、勝出航線、作弊態計數;另掃 **72 組起終點**(可達 ⟺ 有合法航線、出貨 A 下 globalMin==bestClean)與推導 rhs 對帳
 - `verify:risk` — vs 報告發表的四條航線平均值與 CVaR95,含 46% 比值斷言;災害升級三斷言:空集合 bit-identical、只影響過港航線、closed-form 與模擬 <5% 吻合
+- `verify:showcase` — 聯運分頁手抄資料對帳:分項加總、16 組合排行 vs 官方前 12 名、Rank 1 = 0.928146(公路+鐵路)
 - `verify:algos` — 檢查**行為**而非數字:振幅峰值是否落在理論位置、過轉是否真的損失機率、GAS 是否在多數種子命中、**是否曾宣稱低於真實最優**、QAOA 收斂是否單調
 
 新增任何參數的原則:**先與已發表數字對帳,對得上才上線;對不上就標「未驗證」或不做。** 現有的 `cost_norm_hypothesis` 就是這樣處理的。
@@ -146,11 +151,11 @@ npm run verify     # engine + risk + algos + typecheck
 
 | 缺的檔 | 解鎖 | 優先度 |
 |---|---|---|
-| `QLogistics_Champion_ProposalAligned.csv` | **α/β/γ 權重滑桿**(cost/time/geo/port/weather) | 🥇 最高 |
+| `QLogistics_Champion_ProposalAligned.csv` | **16q 逐邊分項**(滑桿已在 0.9281 實例用筆記本輸出先做出來)+ 30 港完整網路 | 🥇 最高 |
 | 其他 ising JSON | 多走廊切換(需變數數 ≤ 22 才能即時) | 🥈 |
 | `port_hazards_v2.json` | 逐港災害細節、分災種開關 | 🥉 |
-| branch `q9_gas_grover` 的 `gas_result.json` | 30q 乾淨結果,補完 16/30/40q 三段對比 | 中 |
-| `q9_benchmark_champion.py` | 分項計算邏輯(可替代 CSV 反推) | 中 |
+| 30q `gas_result.json` | 30q 乾淨結果,補完 16/30/40q 三段對比。**從未 commit 進任何 branch** —— 在平台 `~/qarp_q9/outputs/`,拉回指令見上游 `platform_gas/README.md`(qsim → VPS → 本機) | 中 |
+| `q9_benchmark_champion.py` | 分項計算邏輯。本體只在 Colab `/content`;其用法與部分輸出已嵌在上游根目錄的 `q9_benchmark_champion_colab_ok.ipynb` | 中 |
 
 **權重滑桿是唯一真正卡住的東西。** 現在 16 條航段只有合成後的單一 `score`,拆不開。`edges.json` 裡的 `cost_norm_hypothesis` / `risk_norm_hypothesis` 是我反推的假設(score = (1−λ)·cost + λ·risk_dest/max,相關係數 0.52、implied cost 全落在 [0,1]),**未經驗證,不可對外標示為事實**。
 
@@ -204,7 +209,7 @@ tools/precompute.py       離線產生資料包(讀上游 repo)
 tools/verify_engine.ts    QUBO 對帳(137 點掃描)
 tools/verify_risk.ts      蒙地卡羅對帳(四條航線)
 tools/verify_algos.ts     Grover / QAOA / SA 行為檢查
-src/data/q9_data/         打包進建置的資料(9 個 JSON,約 46 KB)
+src/data/q9_data/         打包進建置的資料(10 個 JSON;showcase.json 手抄自 Colab 筆記本輸出)
 src/data/index.ts         型別化存取 + 格式化函式 + CRITICAL_A
 src/engine/model.ts       QUBO 求解、航線解碼、能量直方圖
 src/engine/risk.ts        蒙地卡羅與 CVaR
@@ -214,7 +219,7 @@ src/lib/store.ts          共用參數 context;model 依起終點快取;兩個�
 src/components/ui.tsx     Card / Stat / Chip / Slider / Toggle / Caveat
 src/components/charts.tsx Histogram / SweepChart / TailChart / LineChart / Bar / QubitScale
 src/components/WorldMap   等距投影,跨換日線的航段會斷成兩段
-src/components/panels/    六個分頁
+src/components/panels/    七個分頁(含「聯運」= 0.9281 showcase)
 src/components/Dashboard  外殼:桌機側欄常駐,lg 以下收成抽屜
 ```
 

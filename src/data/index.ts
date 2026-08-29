@@ -16,6 +16,7 @@ import cvarJson from "./q9_data/cvar.json";
 import algoJson from "./q9_data/algo_compare.json";
 import auditJson from "./q9_data/audit.json";
 import result40Json from "./q9_data/result_40q.json";
+import showcaseJson from "./q9_data/showcase.json";
 
 export const meta = metaJson as Meta & {
   problem_name: string;
@@ -91,6 +92,28 @@ export const result40 = result40Json as {
   complete: boolean;
   trail: { t: number; r: number; sampled: number; y: number; best: number; m_rot: number; sec: number }[];
   corridor: string;
+};
+
+export const showcase = showcaseJson as {
+  source: string;
+  instance: { name: string; variant: string; n_vars: number; n_pauli_terms: number; n_combinations: number };
+  reduced_instance: { name: string; n_vars: number; n_pauli_terms: number };
+  corridor: string[];
+  pairs: string[];
+  published_optimum: number;
+  published_rank_totals: number[];
+  weights_note: string;
+  edges: {
+    pair: string; mode: string; score: number;
+    alpha: number; beta: number; gamma1: number; gamma2: number; gamma3: number;
+    distance_km: number; lead_time_days: number;
+  }[];
+  scenarios: { name: string; label: string; best_objective: number; instance: string; note: string }[];
+  algos: {
+    label: string; runs: number; feasible_rate: number; hit_rate: number;
+    best: number | null; median: number | null; std: number | null;
+    depth: number | null; two_qubit_gates: number | null;
+  }[];
 };
 
 /** Feasibility collapses below this penalty weight; used across several views. */

@@ -9,10 +9,11 @@
     "precompute": "python3 tools/precompute.py",
     "start": "next start",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.tools.json",
-    "verify": "npm run verify:engine && npm run verify:risk && npm run verify:algos && npm run typecheck",
+    "verify": "npm run verify:engine && npm run verify:risk && npm run verify:algos && npm run verify:showcase && npm run typecheck",
     "verify:algos": "node --experimental-strip-types tools/verify_algos.ts",
     "verify:engine": "node --experimental-strip-types tools/verify_engine.ts",
-    "verify:risk": "node --experimental-strip-types tools/verify_risk.ts"
+    "verify:risk": "node --experimental-strip-types tools/verify_risk.ts",
+    "verify:showcase": "node --experimental-strip-types tools/verify_showcase.ts"
   },
   "dependencies": {
     "next": "16.3.3",
