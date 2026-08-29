@@ -11,22 +11,30 @@
 import { useMemo, useState, useTransition } from "react";
 import { LineChart, Bar } from "@/components/charts";
 import { Card, Stat, Chip, Slider, Route, Caveat, Prose, Mono } from "@/components/ui";
-import { useStore, model } from "@/lib/store";
+import { useStore } from "@/lib/store";
+import type { Q9Model } from "@/engine/model";
 import { runQaoa, runSa, DEFAULT_QAOA_PARAMS, DEFAULT_SA_PARAMS } from "@/engine/qaoa";
 import { runGas, amplificationCurve, DEFAULT_GAS_PARAMS } from "@/engine/grover";
-import { solutions, meta, result40, fmtHours } from "@/data";
+import { meta, result40, fmtHours } from "@/data";
 
 export function AlgoPanel() {
-  const { params } = useStore();
+  const { params, model } = useStore();
   const energies = useMemo(
     () => model.energies({ penaltyA: params.penaltyA }),
-    [params.penaltyA],
+    [model, params.penaltyA],
   );
-  const optimum = solutions.optimum;
+  // True minimum of the live instance. For a derived endpoint pair (or a lowered
+  // penalty) the published −97.4936 is the wrong anchor, so anchor on the actual
+  // landscape being searched.
+  const optimum = useMemo(() => {
+    let m = Infinity;
+    for (const v of energies) if (v < m) m = v;
+    return m;
+  }, [energies]);
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
-      <GroverCard energies={energies} optimum={optimum} />
+      <GroverCard model={model} energies={energies} optimum={optimum} />
       <AmplificationCard energies={energies} />
       <QaoaCard energies={energies} optimum={optimum} />
       <SaCard energies={energies} optimum={optimum} />
@@ -36,7 +44,7 @@ export function AlgoPanel() {
 
 /* ------------------------------------------------------------------ Grover */
 
-function GroverCard({ energies, optimum }: { energies: Float64Array; optimum: number }) {
+function GroverCard({ model, energies, optimum }: { model: Q9Model; energies: Float64Array; optimum: number }) {
   const [budget, setBudget] = useState(DEFAULT_GAS_PARAMS.budget);
   const [shots, setShots] = useState(DEFAULT_GAS_PARAMS.shots);
   const [seed, setSeed] = useState(1);
@@ -64,7 +72,7 @@ function GroverCard({ energies, optimum }: { energies: Float64Array; optimum: nu
     >
       <LineChart
         series={[{ values: result.trail.map((s) => s.best), color: "var(--color-gold)" }]}
-        refLines={[{ value: optimum, color: "var(--color-good)", label: "最優 -97.4936" }]}
+        refLines={[{ value: optimum, color: "var(--color-good)", label: `最優 ${optimum.toFixed(4)}` }]}
         markers={result.trail.flatMap((s, i) =>
           s.improved ? [{ index: i, color: "var(--color-quantum)" }] : [])}
         xLabel="BBHT 輪次"

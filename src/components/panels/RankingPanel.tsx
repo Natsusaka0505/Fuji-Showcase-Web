@@ -1,15 +1,30 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Histogram } from "@/components/charts";
 import { Card, Stat, Chip, Route, Caveat, Prose } from "@/components/ui";
-import { useStore, model } from "@/lib/store";
-import { algoCompare, solutions, meta, fmtCost } from "@/data";
+import { useStore, riskEngine } from "@/lib/store";
+import type { RiskResult } from "@/engine/risk";
+import { algoCompare, solutions, meta, fmtCost, fmtUsd } from "@/data";
 
 export function RankingPanel() {
-  const { params, solution } = useStore();
-  const hist = useMemo(() => model.histogram({ penaltyA: params.penaltyA }), [params.penaltyA]);
+  const { params, solution, model, derivedPair } = useStore();
+  const hist = useMemo(() => model.histogram({ penaltyA: params.penaltyA }), [model, params.penaltyA]);
   const best = solution.bestClean;
+  const [rankBy, setRankBy] = useState<"score" | "risk">("score");
+
+  // Risk ranking runs the verified Monte Carlo once per clean route. Scenarios
+  // are capped so dragging a slider stays interactive (≤24 routes × ~1 ms); the
+  // two columns stay separate quantities — no invented score↔USD conversion.
+  const rows = useMemo(() => {
+    if (rankBy === "score") {
+      return solution.ranking.map((r) => ({ ...r, risk: null as RiskResult | null }));
+    }
+    const P = { ...params.risk, nScenarios: Math.min(params.risk.nScenarios, 4000) };
+    return solution.ranking
+      .map((r) => ({ ...r, risk: riskEngine.simulate(r.routeIso, P) as RiskResult | null }))
+      .sort((a, b) => a.risk!.cvarUsd - b.risk!.cvarUsd);
+  }, [rankBy, solution.ranking, params.risk]);
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
@@ -43,14 +58,29 @@ export function RankingPanel() {
 
       <Card
         title="可行航線排行"
-        subtitle="flow-balance 通過且能從新加坡走到洛杉磯"
-        right={<Chip label={`${solution.ranking.length} / ${solutions.n_clean_feasible}`} tone="quantum" />}
+        subtitle={`flow-balance 通過且能從 ${model.source} 走到 ${model.target}`}
+        right={
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="flex overflow-hidden rounded-full border border-border">
+              {(["score", "risk"] as const).map((k) => (
+                <button key={k} type="button" onClick={() => setRankBy(k)}
+                  aria-pressed={rankBy === k}
+                  className={`px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                    rankBy === k ? "bg-gold text-bg" : "text-ink-dim hover:text-ink"
+                  }`}>
+                  {k === "score" ? "營運分數" : "風險 CVaR"}
+                </button>
+              ))}
+            </div>
+            <Chip label={`${solution.ranking.length} / ${model.nCleanRoutes}`} tone="quantum" />
+          </div>
+        }
       >
         {solution.ranking.length === 0 ? (
           <p className="py-6 text-center text-sm text-bad">目前封鎖條件下沒有任何可行航線</p>
         ) : (
           <ol className="max-h-[320px] overflow-y-auto">
-            {solution.ranking.map((r, i) => (
+            {rows.map((r, i) => (
               <li key={r.z} className={`flex items-center gap-3 py-2 ${i > 0 ? "border-t border-border" : ""}`}>
                 <span className={`w-5 shrink-0 font-mono text-xs ${i === 0 ? "text-gold" : "text-ink-faint"}`}>
                   {i + 1}
@@ -59,12 +89,22 @@ export function RankingPanel() {
                   <Route iso={r.routeIso} />
                   <span className="mt-0.5 block text-[10px] text-ink-faint">{r.nEdges} 段</span>
                 </span>
-                <span className={`shrink-0 font-mono text-xs tabular-nums ${i === 0 ? "font-bold text-gold" : "text-ink-dim"}`}>
-                  {fmtCost(r.cost)}
+                <span className={`shrink-0 text-right font-mono text-xs tabular-nums ${i === 0 ? "font-bold text-gold" : "text-ink-dim"}`}>
+                  {r.risk ? fmtUsd(r.risk.cvarUsd) : fmtCost(r.cost)}
+                  {r.risk && (
+                    <span className="block text-[10px] font-normal text-ink-faint">分數 {fmtCost(r.cost)}</span>
+                  )}
                 </span>
               </li>
             ))}
           </ol>
+        )}
+        {rankBy === "risk" && (
+          <Caveat>
+            風險排序以已驗證的蒙地卡羅模型計算(每航線 ≤ 4,000 情境,取 CVaR
+            {(params.risk.cvarQuantile * 100).toFixed(0)})。營運分數與風險成本是兩套量綱,
+            分開呈現、不合成單一指標。在「風險」分頁圈選受災港口,這裡的排序會跟著變。
+          </Caveat>
         )}
       </Card>
 
@@ -112,6 +152,7 @@ export function RankingPanel() {
           近似比 = 最佳可行成本 ÷ 暴力解最佳可行成本,且只對可行解有意義。GAS 該列為煙霧版
           (feasible=False),硬算近似比不合法,故列「—」。此表為固定歷史紀錄,不隨參數變動。
         </Caveat>
+        {derivedPair && <Caveat>上表屬 SIN→LAX 比賽實例,不隨起終點切換。</Caveat>}
       </Card>
     </div>
   );

@@ -11,7 +11,7 @@ export function Card({ title, subtitle, right, children, className = "" }: {
   className?: string;
 }) {
   return (
-    <section className={`rounded-xl border border-border bg-surface p-4 ${className}`}>
+    <section className={`min-w-0 rounded-xl border border-border bg-surface p-4 ${className}`}>
       {(title || right) && (
         <header className="mb-3 flex items-start gap-3">
           <div className="min-w-0 flex-1">
@@ -158,6 +158,30 @@ export function Toggle({ label, value, onChange, hint, tone = "warn" }: {
         />
       </span>
     </button>
+  );
+}
+
+export function Select({ label, value, options, onChange, hint }: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+  hint?: string;
+}) {
+  return (
+    <label className="mb-3 block">
+      <span className="mb-1 block text-xs text-ink">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-border bg-surface-alt px-2 py-1.5 text-xs text-ink"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+      {hint && <span className="mt-1 block text-[10px] leading-snug text-ink-faint">{hint}</span>}
+    </label>
   );
 }
 

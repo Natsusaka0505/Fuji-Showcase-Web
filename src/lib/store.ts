@@ -14,18 +14,37 @@ import { RiskEngine, DEFAULT_RISK_PARAMS, type RiskParams, type RiskResult } fro
 import { meta, edgeData, ports, cvar } from "@/data";
 
 /** Built once per browser session; construction sweeps the state space (~20 ms). */
-export const model = new Q9Model(meta, edgeData);
+export const defaultModel = new Q9Model(meta, edgeData);
 export const riskEngine = new RiskEngine(ports, cvar.mc_model);
+
+/** One model per endpoint pair, built lazily (~20 ms each) and kept for the session. */
+const modelCache = new Map<string, Q9Model>([
+  [`${meta.source_port}→${meta.target_port}`, defaultModel],
+]);
+export function getModel(source: string, target: string): Q9Model {
+  const key = `${source}→${target}`;
+  let m = modelCache.get(key);
+  if (!m) {
+    m = new Q9Model(meta, edgeData, { source, target });
+    modelCache.set(key, m);
+  }
+  return m;
+}
 
 export interface Params {
   penaltyA: number;
   blockedPorts: string[];
+  /** Endpoint pair. Anything but the default SIN→LAX is a browser-derived instance. */
+  source: string;
+  target: string;
   risk: RiskParams;
 }
 
 export const DEFAULT_PARAMS: Params = {
   penaltyA: meta.penalty_A_default,
   blockedPorts: [],
+  source: meta.source_port,
+  target: meta.target_port,
   risk: {
     ...DEFAULT_RISK_PARAMS,
     nScenarios: cvar.n_scenarios,
@@ -39,8 +58,18 @@ export interface Store {
   setParams: (fn: (p: Params) => Params) => void;
   setRisk: (patch: Partial<RiskParams>) => void;
   togglePort: (iso: string) => void;
+  /** Toggle a port in/out of the escalated typhoon or earthquake scenario. */
+  toggleHazardPort: (kind: "typhoon" | "quake", iso: string) => void;
   reset: () => void;
   isDefault: boolean;
+  /** Engine for the selected endpoint pair. */
+  model: Q9Model;
+  /**
+   * True when the pair differs from the competition instance. Every published
+   * number (−97.4936, A* = 0.74, the sweep) belongs to SIN→LAX only, so derived
+   * pairs must be flagged wherever those are shown.
+   */
+  derivedPair: boolean;
   solution: SolveResult;
   /** Risk of the currently optimal route, under the live parameters. */
   routeRisk: RiskResult | null;
@@ -59,9 +88,12 @@ export function useStore(): Store {
 export function useStoreValue(): Store {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
 
+  const model = getModel(params.source, params.target);
+  const derivedPair = params.source !== DEFAULT_PARAMS.source || params.target !== DEFAULT_PARAMS.target;
+
   const solution = useMemo(
     () => model.solve({ penaltyA: params.penaltyA, blockedPorts: params.blockedPorts }),
-    [params.penaltyA, params.blockedPorts],
+    [model, params.penaltyA, params.blockedPorts],
   );
 
   const routeRisk = useMemo(() => {
@@ -74,15 +106,16 @@ export function useStoreValue(): Store {
     [params.risk],
   );
 
-  const isDefault = useMemo(
-    () =>
-      params.penaltyA === DEFAULT_PARAMS.penaltyA &&
-      params.blockedPorts.length === 0 &&
-      (Object.keys(params.risk) as (keyof RiskParams)[]).every(
-        (k) => params.risk[k] === DEFAULT_PARAMS.risk[k],
-      ),
-    [params],
-  );
+  const isDefault = useMemo(() => {
+    if (params.penaltyA !== DEFAULT_PARAMS.penaltyA) return false;
+    if (params.blockedPorts.length > 0) return false;
+    if (params.source !== DEFAULT_PARAMS.source || params.target !== DEFAULT_PARAMS.target) return false;
+    return (Object.keys(params.risk) as (keyof RiskParams)[]).every((k) => {
+      const v = params.risk[k];
+      // The escalated-port lists are arrays; "default" means empty, not same ref.
+      return Array.isArray(v) ? v.length === 0 : v === DEFAULT_PARAMS.risk[k];
+    });
+  }, [params]);
 
   return {
     params,
@@ -95,8 +128,17 @@ export function useStoreValue(): Store {
           ? p.blockedPorts.filter((x) => x !== iso)
           : [...p.blockedPorts, iso],
       })),
+    toggleHazardPort: (kind, iso) =>
+      setParams((p) => {
+        const key = kind === "typhoon" ? "typhoonEscalatedPorts" : "quakeEscalatedPorts";
+        const cur = p.risk[key];
+        const next = cur.includes(iso) ? cur.filter((x) => x !== iso) : [...cur, iso];
+        return { ...p, risk: { ...p.risk, [key]: next } };
+      }),
     reset: () => setParams(DEFAULT_PARAMS),
     isDefault,
+    model,
+    derivedPair,
     solution,
     routeRisk,
     benchmarkRisks,

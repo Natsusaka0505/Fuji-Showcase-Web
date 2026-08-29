@@ -3,10 +3,10 @@
 import { TailChart, Bar } from "@/components/charts";
 import { Card, Stat, Chip, Route, Slider, Toggle, Caveat, Prose } from "@/components/ui";
 import { useStore } from "@/lib/store";
-import { cvar, fmtUsd } from "@/data";
+import { cvar, fmtUsd, ports } from "@/data";
 
 export function RiskPanel() {
-  const { params, setRisk, routeRisk, benchmarkRisks, solution } = useStore();
+  const { params, setRisk, routeRisk, benchmarkRisks, solution, togglePort, toggleHazardPort } = useStore();
   const R = params.risk;
 
   const maxCvar = Math.max(...benchmarkRisks.map((r) => r.cvarUsd));
@@ -95,6 +95,81 @@ export function RiskPanel() {
           模型結構由報告的四條航線 CVaR 表回歸還原:平均延誤誤差 0.15%,尾部形狀以 2 個參數擬合、
           RMS {cvar.mc_model.tail_fit_rms_err_pct}%。每日延誤成本為 estimate 級,非官方統計。
         </Caveat>
+      </Card>
+
+      <Card
+        title="災害情境"
+        subtitle="圈選受災港口:封鎖直接改變可行航線,颱風/地震改變風險排序"
+        className="xl:col-span-2"
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[420px] text-left">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-wide text-ink-faint">
+                <th className="pb-1 font-normal">港</th>
+                <th className="pb-1 text-center font-normal">颱風</th>
+                <th className="pb-1 text-center font-normal">地震</th>
+                <th className="pb-1 text-center font-normal">封鎖(戰爭)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ports.map((p) => {
+                const typhoonOn = R.typhoonEscalatedPorts.includes(p.iso);
+                const quakeOn = R.quakeEscalatedPorts.includes(p.iso);
+                const blocked = params.blockedPorts.includes(p.iso);
+                return (
+                  <tr key={p.iso} className="border-t border-border">
+                    <td className="py-1.5">
+                      <span className="font-mono text-xs font-bold text-ink">{p.iso}</span>
+                      <span className="ml-2 text-[10px] text-ink-faint">{p.name}</span>
+                    </td>
+                    <td className="py-1.5 text-center">
+                      <button type="button" onClick={() => toggleHazardPort("typhoon", p.iso)}
+                        aria-pressed={typhoonOn}
+                        className={`rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold transition-colors ${
+                          typhoonOn ? "border-warn bg-warn text-bg" : "border-border text-ink-faint hover:text-ink"
+                        }`}>
+                        {typhoonOn ? `${R.hazardEscalation.toFixed(1)}×` : "—"}
+                      </button>
+                    </td>
+                    <td className="py-1.5 text-center">
+                      {p.quake_m5_300km === 0 ? (
+                        <span className="text-[10px] text-ink-faint" title="目錄期內無 M5+ 地震,無基線可升級">無基線</span>
+                      ) : (
+                        <button type="button" onClick={() => toggleHazardPort("quake", p.iso)}
+                          aria-pressed={quakeOn}
+                          className={`rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold transition-colors ${
+                            quakeOn ? "border-quantum bg-quantum text-bg" : "border-border text-ink-faint hover:text-ink"
+                          }`}>
+                          {quakeOn ? `${R.hazardEscalation.toFixed(1)}×` : "—"}
+                        </button>
+                      )}
+                    </td>
+                    <td className="py-1.5 text-center">
+                      <button type="button" onClick={() => togglePort(p.iso)}
+                        aria-pressed={blocked}
+                        className={`rounded-full border px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                          blocked ? "border-bad bg-bad text-bg" : "border-border text-ink-faint hover:text-ink"
+                        }`}>
+                        {blocked ? "封鎖中" : "—"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-3 md:max-w-sm">
+          <Slider label="災害升級倍率" value={R.hazardEscalation} min={1} max={10} step={0.5}
+            onChange={(v) => setRisk({ hazardEscalation: v })} format={(v) => `${v.toFixed(1)}×`}
+            hint="套用在被圈選港口的颱風/地震年率上,與全域縮放相乘;1.0× 即回到基線" tone="warn" />
+        </div>
+        <Prose>
+          封鎖作用在 QUBO 可行集,最佳航線即時換路(與「地圖」分頁的點港封鎖同一件事);
+          颱風與地震進蒙地卡羅,到「排行」分頁切「風險 CVaR」看災害如何改寫路線排序。
+          基線災害率(JMA/USGS)永遠生效 —— 這裡圈的是「進一步升級」情境。
+        </Prose>
       </Card>
     </div>
   );

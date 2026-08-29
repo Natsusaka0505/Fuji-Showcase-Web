@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 import { ports, penaltySweep, solutions, meta, CRITICAL_A, fmtCost } from "@/data";
 
 export function MapPanel() {
-  const { params, togglePort, solution } = useStore();
+  const { params, togglePort, solution, model, derivedPair } = useStore();
   const best = solution.bestClean;
   const cheating = solution.cheatStates > 0;
   const atOptimum = best ? Math.abs(best.cost - solutions.optimum) < 1e-9 : false;
@@ -16,7 +16,7 @@ export function MapPanel() {
     <div className="grid gap-4 xl:grid-cols-2">
       <Card
         title="九港路網"
-        subtitle={`${meta.source_port} → ${meta.target_port}｜16 條候選航段 = 16 qubits`}
+        subtitle={`${model.source} → ${model.target}｜16 條候選航段 = 16 qubits`}
         right={<Chip label={`${solution.ranking.length} 條可行`} tone="quantum" />}
         className="xl:col-span-2"
       >
@@ -36,12 +36,19 @@ export function MapPanel() {
               <Stat label="成本" value={fmtCost(best.cost)} tone="gold" />
               <Stat label="航段" value={String(best.nEdges)} unit="段" />
               <Stat label="轉運" value={String(best.route.length - 2)} unit="港" />
-              <Stat
-                label="vs 最佳"
-                value={atOptimum ? "命中" : `+${(best.cost - solutions.optimum).toFixed(3)}`}
-                tone={atOptimum ? "good" : "warn"}
-              />
+              {!derivedPair && (
+                <Stat
+                  label="vs 最佳"
+                  value={atOptimum ? "命中" : `+${(best.cost - solutions.optimum).toFixed(3)}`}
+                  tone={atOptimum ? "good" : "warn"}
+                />
+              )}
             </div>
+            {derivedPair && (
+              <Caveat>
+                衍生起終點:不與已發表最優 −97.4936 對比(該數字僅屬 SIN→LAX)。
+              </Caveat>
+            )}
           </>
         ) : (
           <p className="py-6 text-center text-sm text-bad">所有可行航線都被封鎖了</p>
@@ -69,6 +76,11 @@ export function MapPanel() {
           <Stat label="出貨值" value={meta.penalty_A_default.toFixed(2)} tone="gold" />
           <Stat label="安全邊際" value={`${(meta.penalty_A_default / CRITICAL_A).toFixed(1)}×`} />
         </div>
+        {derivedPair && (
+          <Caveat>
+            掃描曲線、臨界 A* 與安全邊際為 SIN→LAX 的預算資料;卡片右上的作弊態計數則依目前起終點即時計算。
+          </Caveat>
+        )}
       </Card>
 
       <Card title="港口風險" subtitle="點列可切換封鎖" className="xl:col-span-2">

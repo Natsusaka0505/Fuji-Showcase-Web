@@ -66,6 +66,15 @@ export interface RiskParams {
   typhoonScale: number;
   /** Global scale on earthquake rates. */
   quakeScale: number;
+  /**
+   * Ports under an escalated typhoon scenario (ISO codes). Empty reproduces the
+   * fitted baseline exactly; verify_risk pins that.
+   */
+  typhoonEscalatedPorts: readonly string[];
+  /** Ports under an escalated earthquake scenario (ISO codes). */
+  quakeEscalatedPorts: readonly string[];
+  /** Extra multiplier on the escalated ports' rates, on top of the global scales. */
+  hazardEscalation: number;
   seed: number;
 }
 
@@ -91,6 +100,9 @@ export const DEFAULT_RISK_PARAMS: RiskParams = {
   hormuzBlockade: false,
   typhoonScale: 1,
   quakeScale: 1,
+  typhoonEscalatedPorts: [],
+  quakeEscalatedPorts: [],
+  hazardEscalation: 3,
   seed: 7,
 };
 
@@ -165,8 +177,10 @@ export class RiskEngine {
     for (const iso of routeIso) {
       const p = this.ports.get(iso);
       if (!p) continue;
-      typhoonDays += p.typhoon_closure_days_per_year * params.typhoonScale;
-      quakeRate += (p.quake_m5_300km / m.catalog_years) * params.quakeScale;
+      const tEsc = params.typhoonEscalatedPorts.includes(iso) ? params.hazardEscalation : 1;
+      const qEsc = params.quakeEscalatedPorts.includes(iso) ? params.hazardEscalation : 1;
+      typhoonDays += p.typhoon_closure_days_per_year * params.typhoonScale * tEsc;
+      quakeRate += (p.quake_m5_300km / m.catalog_years) * params.quakeScale * qEsc;
       if (iso === "SUZ") suezDelay = m.suez_delay_days * params.suezConflictMultiplier;
     }
     // Closure days are split into Poisson-many events of random duration; that
@@ -220,8 +234,10 @@ export class RiskEngine {
     for (const iso of routeIso) {
       const p = this.ports.get(iso);
       if (!p) continue;
-      days += p.typhoon_closure_days_per_year * params.typhoonScale * w;
-      days += (p.quake_m5_300km / m.catalog_years) * params.quakeScale * w * m.quake_impact_days;
+      const tEsc = params.typhoonEscalatedPorts.includes(iso) ? params.hazardEscalation : 1;
+      const qEsc = params.quakeEscalatedPorts.includes(iso) ? params.hazardEscalation : 1;
+      days += p.typhoon_closure_days_per_year * params.typhoonScale * tEsc * w;
+      days += (p.quake_m5_300km / m.catalog_years) * params.quakeScale * qEsc * w * m.quake_impact_days;
       if (iso === "SUZ") days += m.suez_delay_days * params.suezConflictMultiplier;
     }
     return days;

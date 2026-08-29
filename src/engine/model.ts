@@ -79,6 +79,11 @@ export class Q9Model {
   readonly n: number;
   readonly size: number;
   readonly meta: Meta;
+  /** Endpoint pair this instance is built for; defaults to the competition's. */
+  readonly source: string;
+  readonly target: string;
+  /** +1 at the source, -1 at the target, 0 elsewhere; derived from the pair. */
+  readonly rhs: readonly number[];
   readonly edges: Edge[];
   readonly defaultScores: Float64Array;
 
@@ -89,8 +94,14 @@ export class Q9Model {
   private readonly isoOf: ReadonlyMap<string, string>;
   private readonly edgeMask: ReadonlyMap<string, number>;
 
-  constructor(meta: Meta, data: EdgeData) {
+  constructor(meta: Meta, data: EdgeData, endpoints?: { source: string; target: string }) {
     this.meta = meta;
+    this.source = endpoints?.source ?? meta.source_port;
+    this.target = endpoints?.target ?? meta.target_port;
+    // Deriving rhs from the endpoints (rather than reading data.rhs) is what makes
+    // them selectable. The default pair must reproduce data.rhs exactly;
+    // verify_engine checks that, plus the clean set of every reachable pair.
+    this.rhs = data.incidence_ports.map((p) => (p === this.source ? 1 : p === this.target ? -1 : 0));
     this.edges = data.edges;
     this.n = meta.n_qubits;
     this.size = 1 << this.n;
@@ -123,7 +134,7 @@ export class Q9Model {
       }
       let p = 0;
       for (let v = 0; v < nPorts; v++) {
-        const d = flow[v] - data.rhs[v];
+        const d = flow[v] - this.rhs[v];
         p += d * d;
       }
       this.penalty[z] = p;
@@ -139,9 +150,15 @@ export class Q9Model {
     this.cleanRoutes = clean;
   }
 
+  /** Clean complete routes for this endpoint pair, before any blockade filter. */
+  get nCleanRoutes(): number {
+    return this.cleanRoutes.length;
+  }
+
   /** Walk the successor map from the source, exactly as `decode_route_ising` does. */
   decode(z: number): RouteSolution {
-    const { source_port: src, target_port: tgt } = this.meta;
+    const src = this.source;
+    const tgt = this.target;
     const next = new Map<string, string>();
     let nEdges = 0;
     for (const e of this.edges) {
@@ -247,4 +264,30 @@ export class Q9Model {
     const binEdges = Float64Array.from({ length: bins + 1 }, (_, i) => min + i * width);
     return { counts, binEdges };
   }
+}
+
+/**
+ * Ports reachable from `source` along directed edges — the valid target choices.
+ * A simple directed path is automatically flow-balanced, so a pair has at least
+ * one clean route iff a path exists.
+ */
+export function reachableTargets(data: EdgeData, source: string): string[] {
+  const adj = new Map<string, string[]>();
+  for (const e of data.edges) {
+    const l = adj.get(e.origin) ?? [];
+    l.push(e.destination);
+    adj.set(e.origin, l);
+  }
+  const seen = new Set<string>();
+  const stack = [source];
+  while (stack.length) {
+    for (const q of adj.get(stack.pop()!) ?? []) {
+      if (!seen.has(q)) {
+        seen.add(q);
+        stack.push(q);
+      }
+    }
+  }
+  seen.delete(source); // a round trip is not a corridor
+  return data.incidence_ports.filter((p) => seen.has(p));
 }

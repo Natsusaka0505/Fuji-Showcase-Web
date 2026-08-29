@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Q9Model } from "../src/engine/model.ts";
+import { Q9Model, reachableTargets } from "../src/engine/model.ts";
 
 const DATA = join(dirname(fileURLToPath(import.meta.url)), "../src/data/q9_data");
 const read = (f: string) => JSON.parse(readFileSync(join(DATA, f), "utf8"));
@@ -75,6 +75,39 @@ check(`penalty sweep, ${sweep.points.length} points`, sweepBad === 0, `${sweepBa
 const hist = model.histogram({ penaltyA: A });
 check("histogram total", [...hist.counts].reduce((a, b) => a + b, 0) === model.size);
 check("histogram vs baked", baked.histogram.counts.every((c: number, i: number) => c === hist.counts[i]));
+
+// Selectable endpoints: the derived rhs must reproduce the baked instance, and
+// every pair joined by a directed path must yield a clean, complete best route
+// that the global minimum agrees with at the shipped A.
+check("derived rhs matches baked rhs",
+  model.rhs.every((v: number, i: number) => v === edgeData.rhs[i]));
+
+let pairChecked = 0;
+let pairBad = 0;
+const tPairs = performance.now();
+for (const src of edgeData.incidence_ports as string[]) {
+  const reach = new Set(reachableTargets(edgeData, src));
+  for (const tgt of edgeData.incidence_ports as string[]) {
+    if (tgt === src) continue;
+    const m = new Q9Model(meta, edgeData, { source: src, target: tgt });
+    const s = m.solve({ penaltyA: A });
+    const hasPath = reach.has(tgt);
+    const ok = hasPath
+      ? s.bestClean !== null &&
+        s.bestClean.complete &&
+        s.bestClean.feasible &&
+        s.ranking.every((r) => r.complete && r.feasible) &&
+        s.globalMin.z === s.bestClean.z
+      : s.bestClean === null;
+    pairChecked++;
+    if (!ok && pairBad++ === 0) {
+      console.log(`  FAIL  pair ${src}->${tgt}: hasPath=${hasPath}` +
+        ` bestClean=${s.bestClean?.route.join("->") ?? "null"} gz=${s.globalMin.z}`);
+    }
+  }
+}
+check(`all ${pairChecked} endpoint pairs consistent with reachability`, pairBad === 0,
+  `${(performance.now() - tPairs).toFixed(0)} ms`);
 
 const t1 = performance.now();
 const N = 30;

@@ -8,16 +8,17 @@
  */
 "use client";
 
-import { useState } from "react";
-import { StoreContext, useStoreValue, useStore } from "@/lib/store";
-import { Slider, Toggle, Chip } from "@/components/ui";
+import { useMemo, useState } from "react";
+import { StoreContext, useStoreValue, useStore, DEFAULT_PARAMS } from "@/lib/store";
+import { Slider, Toggle, Chip, Select } from "@/components/ui";
+import { reachableTargets } from "@/engine/model";
 import { MapPanel } from "@/components/panels/MapPanel";
 import { RankingPanel } from "@/components/panels/RankingPanel";
 import { RiskPanel } from "@/components/panels/RiskPanel";
 import { AlgoPanel } from "@/components/panels/AlgoPanel";
 import { QuantumPanel } from "@/components/panels/QuantumPanel";
 import { AuditPanel } from "@/components/panels/AuditPanel";
-import { meta, CRITICAL_A, fmtUsd } from "@/data";
+import { meta, edgeData, ports, CRITICAL_A, fmtUsd } from "@/data";
 
 const TABS = [
   { key: "map", label: "地圖", Panel: MapPanel },
@@ -40,12 +41,12 @@ export function Dashboard() {
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("map");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { solution, isDefault, reset } = useStore();
+  const { solution, isDefault, reset, derivedPair } = useStore();
   const Panel = TABS.find((t) => t.key === tab)!.Panel;
   const cheating = solution.cheatStates > 0;
 
   return (
-    <div className="mx-auto max-w-[1600px]">
+    <div className="mx-auto max-w-[1600px] overflow-x-clip">
       <header className="sticky top-0 z-20 border-b border-border bg-bg/95 backdrop-blur">
         <div className="flex items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
@@ -54,6 +55,7 @@ function Shell() {
               風險感知全球供應鏈路徑優化｜Fujitsu Quantum Simulator Challenge 2025-26
             </p>
           </div>
+          {derivedPair && <Chip label="衍生情境" tone="warn" filled />}
           {cheating && <Chip label="約束失效" tone="bad" filled />}
           {!isDefault && (
             <button type="button" onClick={reset}
@@ -94,12 +96,13 @@ function Shell() {
 
 /** The parameters every panel reacts to. */
 function ParamColumn() {
-  const { params, setParams, setRisk, solution } = useStore();
+  const { params, setParams, setRisk, solution, derivedPair } = useStore();
   const cheating = solution.cheatStates > 0;
 
   return (
     <div>
       <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">共用參數</h2>
+      <PairPicker />
       <Slider
         label="penalty_A"
         value={params.penaltyA}
@@ -109,8 +112,12 @@ function ParamColumn() {
         onChange={(v) => setParams((p) => ({ ...p, penaltyA: v }))}
         hint={
           cheating
-            ? `低於臨界 ${CRITICAL_A}:有 ${solution.cheatStates} 個作弊態勝過最佳合法航線`
-            : `流量守恆約束強度｜臨界 ${CRITICAL_A}、出貨值 ${meta.penalty_A_default.toFixed(2)}`
+            ? derivedPair
+              ? `有 ${solution.cheatStates} 個作弊態勝過最佳合法航線`
+              : `低於臨界 ${CRITICAL_A}:有 ${solution.cheatStates} 個作弊態勝過最佳合法航線`
+            : derivedPair
+              ? "流量守恆約束強度｜臨界 A* 與出貨值僅對 SIN→LAX 校準"
+              : `流量守恆約束強度｜臨界 ${CRITICAL_A}、出貨值 ${meta.penalty_A_default.toFixed(2)}`
         }
         tone={cheating ? "bad" : "gold"}
       />
@@ -150,6 +157,44 @@ function ParamColumn() {
         全部運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)並重跑
         10,000 次蒙地卡羅情境(~2 ms)。
       </p>
+    </div>
+  );
+}
+
+/** Endpoint pair picker. Only pairs joined by a directed path are offered. */
+function PairPicker() {
+  const { params, setParams, derivedPair } = useStore();
+  const sources = useMemo(
+    () => edgeData.incidence_ports.filter((p) => reachableTargets(edgeData, p).length > 0),
+    [],
+  );
+  const targets = useMemo(() => reachableTargets(edgeData, params.source), [params.source]);
+  const isoByName = useMemo(() => new Map(ports.map((p) => [p.name, p.iso])), []);
+  const opt = (names: string[]) =>
+    names.map((n) => ({ value: n, label: `${isoByName.get(n) ?? n} · ${n}` }));
+
+  const pickSource = (source: string) => {
+    const ok = reachableTargets(edgeData, source);
+    const target = ok.includes(params.target)
+      ? params.target
+      : ok.includes(DEFAULT_PARAMS.target)
+        ? DEFAULT_PARAMS.target
+        : ok[0];
+    setParams((p) => ({ ...p, source, target }));
+  };
+
+  return (
+    <div className="mb-4">
+      <Select label="起點" value={params.source} options={opt(sources)} onChange={pickSource} />
+      <Select label="終點" value={params.target} options={opt(targets)}
+        onChange={(target) => setParams((p) => ({ ...p, target }))}
+        hint="只列出有向路網可達的港口" />
+      {derivedPair && (
+        <p className="rounded-lg border-l-[3px] border-warn bg-surface-alt p-2 text-[10px] leading-relaxed text-ink-dim">
+          非預設起終點為瀏覽器端衍生實例,未在比賽平台驗證;−97.4936、A* = 0.74
+          等已發表數字僅屬 Singapore → Los Angeles。
+        </p>
+      )}
     </div>
   );
 }

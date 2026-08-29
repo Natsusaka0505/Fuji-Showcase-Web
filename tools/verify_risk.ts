@@ -53,6 +53,33 @@ const ratioOk = Math.abs(100 * ratio - 46) <= 3;
 if (!ratioOk) failures++;
 console.log(`  ${ratioOk ? "ok  " : "FAIL"}  地中海 / 蘇伊士 CVaR95 ratio = ${(100 * ratio).toFixed(0)}%  (report: 46%)`);
 
+// Per-port hazard escalation: an empty escalation set must reproduce the fitted
+// model bit-for-bit, and escalating one port must move only routes touching it.
+console.log("\nper-port hazard escalation");
+const base = engine.simulate(["SIN", "KHH", "CMB"], P);
+const noop = engine.simulate(["SIN", "KHH", "CMB"], { ...P, hazardEscalation: 5 });
+const escKhh = { ...P, typhoonEscalatedPorts: ["KHH"], quakeEscalatedPorts: ["KHH"], hazardEscalation: 5 };
+const hit = engine.simulate(["SIN", "KHH", "CMB"], escKhh);
+const missBase = engine.simulate(["SIN", "SHA", "CMB"], P);
+const miss = engine.simulate(["SIN", "SHA", "CMB"], escKhh);
+
+const c1 = Math.abs(noop.meanUsd - base.meanUsd) < 1e-9;
+if (!c1) failures++;
+console.log(`  ${c1 ? "ok  " : "FAIL"}  empty escalation set is bit-identical to baseline`);
+
+const c2 = hit.meanUsd > base.meanUsd * 1.5;
+if (!c2) failures++;
+console.log(`  ${c2 ? "ok  " : "FAIL"}  escalating KHH raises a KHH route   ${M(base.meanUsd)} -> ${M(hit.meanUsd)}`);
+
+const c3 = Math.abs(miss.meanUsd - missBase.meanUsd) < 1e-9;
+if (!c3) failures++;
+console.log(`  ${c3 ? "ok  " : "FAIL"}  routes avoiding KHH are untouched`);
+
+const cf = engine.expectedDelayDays(["SIN", "KHH", "CMB"], escKhh) * P.dailyDelayCostUsd;
+const c4 = Math.abs(cf - hit.meanUsd) / cf < 0.05;
+if (!c4) failures++;
+console.log(`  ${c4 ? "ok  " : "FAIL"}  closed form matches simulation under escalation   ${M(cf)} vs ${M(hit.meanUsd)}`);
+
 const t0 = performance.now();
 for (const r of cvar.routes) engine.simulate(r.route_iso, P);
 console.log(`\n  ${((performance.now() - t0) / 4).toFixed(1)} ms per route @ ${P.nScenarios} scenarios`);
