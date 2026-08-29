@@ -35,10 +35,15 @@ export function Histogram({ counts, binEdges, markers, height = 120 }: {
         <line key={i} x1={xOf(m.value)} y1={4} x2={xOf(m.value)} y2={height - 13}
           stroke={m.color} strokeWidth={1.4} strokeDasharray="3 2" />
       ))}
-      {markers?.map((m, i) => (
-        <text key={`t${i}`} x={Math.min(W - 2, xOf(m.value) + 3)} y={11}
-          fontSize={8} fontWeight="700" fill={m.color}>{m.label}</text>
-      ))}
+      {markers?.map((m, i) => {
+        // Coinciding markers (the shipped-A case: best legal == global min) would
+        // stack their labels, so each collision pushes the later label a row down.
+        const row = markers.slice(0, i).filter((o) => Math.abs(xOf(o.value) - xOf(m.value)) < 70).length;
+        return (
+          <text key={`t${i}`} x={Math.min(W - 2, xOf(m.value) + 3)} y={11 + row * 10}
+            fontSize={8} fontWeight="700" fill={m.color}>{m.label}</text>
+        );
+      })}
       <text x={0} y={height - 2} fontSize={8} fill="var(--color-ink-faint)">{lo.toFixed(0)}</text>
       <text x={W} y={height - 2} fontSize={8} fill="var(--color-ink-faint)" textAnchor="end">{hi.toFixed(0)}</text>
     </svg>
