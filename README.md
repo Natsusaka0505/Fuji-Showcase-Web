@@ -23,6 +23,12 @@ npm run dev
 
 就這樣 —— 不需要資料庫、環境變數、API 金鑰。所有資料在建置時就打包進去了。
 
+> **本機開發位置**:這個專案放在 `~/Desktop/dev/App/Fuji-App`。要用 Claude Code 開發時,在該目錄下啟動,它會自動讀取 [`CLAUDE.md`](./CLAUDE.md) 取得完整脈絡 —— 模型公式、不可違反的口徑紀律、驗證流程、缺哪些資料。
+>
+> ```bash
+> cd ~/Desktop/dev/App/Fuji-App && claude
+> ```
+
 ---
 
 ## 怎麼用這個網站
@@ -202,3 +208,19 @@ npm run verify       # 確認沒有破壞任何對帳
 ```
 
 `precompute.py` 需要 Python 3 與 numpy。它會自己驗證向量化模型與參考實作的誤差,對不上會直接 assert 失敗。
+
+資料來源是上游的比賽 repo(`~/Desktop/Fujitsu_Quantum_Simulator_Challenge_2025-26`),路徑寫死在腳本裡,搬動任一邊都要改。
+
+---
+
+## 想改這個專案?
+
+[`CLAUDE.md`](./CLAUDE.md) 有開發需要的完整脈絡:
+
+- 兩個模型的完整公式、常數、驗證容差
+- **不可違反的口徑紀律**(品質看 16q / 規模看 40q、兩個模型不可混用、GAS 近似比必須列「—」)
+- 三個驗證腳本各自檢查什麼,以及新增參數的對帳原則
+- 效能預算,以及為什麼刻意不用 Web Worker
+- Grover 預設值為何是那些數字(調小會直接失去命中率)
+- 缺哪些資料、各自能解鎖什麼功能
+- 踩過的坑:tsconfig 為何拆兩份、npm cache 權限、為何從 React Native 改成網站
