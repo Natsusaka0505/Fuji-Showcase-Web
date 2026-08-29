@@ -7,6 +7,7 @@
     "dev": "next dev",
     "lint": "eslint",
     "precompute": "python3 tools/precompute.py",
+    "precompute:showcase": "python3 tools/extract_showcase_network.py",
     "start": "next start",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.tools.json",
     "verify": "npm run verify:engine && npm run verify:risk && npm run verify:algos && npm run verify:showcase && npm run typecheck",

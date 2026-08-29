@@ -9,9 +9,14 @@
 GitHub      https://github.com/Natsusaka0505/Fuji-Showcase-Web
 上游資料源   ~/Desktop/Fujitsu_Quantum_Simulator_Challenge_2025-26
 證據包       ~/Desktop/q9_full_evidence_20260705.tar.gz(stage40 平台完整證據)
+Colab bundle ~/Desktop/Fujitsu_Quantum_Simulator_Challenge_2025-26-main/outputs/q9_qarp_exports/work/.../graph_q9/
 ```
 
-證據包內容:`src/`(build_ising_40q.py、montecarlo_cvar.py 等**原始生成器**)、`outputs/stage40/risk/`(port_hazards_v2.json、route_risk.json = 發表 CVaR 表原檔)、三個 40q ising 變體、全部 slurm/logs。**它不是 Colab bundle** —— 16q 逐邊 α/β/γ 分項與 30 港網路仍在 `QLogistics_Champion_ProposalAligned.csv`(只在 Colab `/content`)。
+graph_q9 內有 `QLogistics_Champion_ProposalAligned.csv`(15.7 MB 出貨行資料)與 `artifacts/q9_graph/`(node/pair/mode edge 聚合表 + corridor_paths.json)。`tools/extract_showcase_network.py` 讀它的絕對路徑產生 `showcase_network.json`,搬動要改。
+
+證據包內容:`src/`(build_ising_40q.py、montecarlo_cvar.py 等**原始生成器**)、`outputs/stage40/risk/`(port_hazards_v2.json、route_risk.json = 發表 CVaR 表原檔)、三個 40q ising 變體、全部 slurm/logs。
+
+**兩個模型家族的分項體系不同,別搞混**:16q ising(−97.4936)由 build_ising_40q.py 生成,分解是 dist + λ·risk + market 三項(λ 滑桿);0.9281 家族由 CSV 管線生成,分解是 α/β/γ₁γ₂γ₃ 五項(聯運分頁權重滑桿)。「16q 逐邊五分項」這個東西**不存在** —— 早期缺失表的那條假設是錯的。
 
 上游是比賽的原始 repo(Obsidian 筆記 + 平台程式碼 + ising 實例),**不是子模組,不會自動同步**。要重新產生資料包時 `tools/precompute.py` 會去讀它的絕對路徑,搬動任一邊都要改。
 
@@ -87,9 +92,11 @@ score_e = haversine(o,d)/20000 + λ·port_risk[dest]/max + |N(0,0.03)|market
 
 **口徑**:非 0.4 的 λ = 衍生能量地貌。`store.derived = derivedPair || λ≠0.4`,所有已發表數字的顯示都 gate 在 `derived` 上(不是 `derivedPair`)。
 
-### 0.9281 聯運分頁(showcase.json)
+### 0.9281 聯運分頁(showcase.json + showcase_network.json)
 
-「聯運」分頁展示 Colab benchmark 的 local reduced 實例(8 mode-edge、36 Pauli)。資料**手抄自 `q9_benchmark_champion_colab_ok.ipynb` 內嵌輸出**(上游 repo 根目錄,cells 12/14),是唯一分項齊全的實例:Σ(α+β+γ₁+γ₂+γ₃) == edge_score 逐邊成立(≤3e-6,6 位小數截斷)。權重滑桿在此實現 —— 語意是**分項相對縮放**(分項已內含權重,絕對 α/β/γ 值不在輸出裡)。0.928146 = SIN→RTM|Road (0.340976) + RTM→LAX|Rail (0.587170)。災害情境卡(port shock → 0.940109)與演算法表為固定紀錄,衝擊量級定義在 bundle CSV 內、無法即時重算。verify:showcase 鎖住分項加總與前 12 名排行對帳。
+「聯運」分頁有兩層資料:`showcase.json`(8 mode-edge,手抄自 `q9_benchmark_champion_colab_ok.ipynb` cells 12/14)與 `showcase_network.json`(9 港/64 pair/256 mode-edge 全網路,`tools/extract_showcase_network.py` 從 graph_q9 artifacts 抽取,`npm run precompute:showcase` 重生)。兩層由 verify:showcase 互相對帳(手抄 8 邊 vs CSV ≤1e-6)。
+
+權重滑桿驅動**走廊排行**:每段在加權後四種運輸方式取最優、走廊分數 = 各段最優和;全部 1.00× 復現官方 corridor_paths.json 六條分數(Rank 1 = 0.928146 = SIN→RTM|Road + RTM→LAX|Rail)。滑桿語意是分項相對縮放,絕對權重(α0.30/β0.20/γ 0.20·0.15·0.15)已由 CSV 欄位驗證。災害情境卡(port shock → 0.940109 = 漢堡線)與演算法表為固定紀錄。
 
 ---
 
@@ -116,7 +123,7 @@ npm run verify     # engine + risk + algos + typecheck
 
 - `verify:engine` — TS 求解器 vs Python 預算結果,**137 個 penalty 掃描點逐點比對**(不是只比端點),含可行性轉折、勝出航線、作弊態計數;另掃 **72 組起終點**與推導 rhs 對帳;score 拆解:λ=0.4 重組 ≤1e-12、16 個 market 殘差全在 [0, 0.12]
 - `verify:risk` — vs 報告發表的四條航線平均值與 CVaR95,含 46% 比值斷言;災害升級三斷言:空集合 bit-identical、只影響過港航線、closed-form 與模擬 <5% 吻合;**vs port_hazards_v2.json 原始檔**:擬合 7.4979 vs 原始 7.5、0.7934 vs 0.792、9 港逐欄一致(原始檔 λ 隱含 11.500 年目錄,擬合 11.504)
-- `verify:showcase` — 聯運分頁手抄資料對帳:分項加總、16 組合排行 vs 官方前 12 名、Rank 1 = 0.928146(公路+鐵路)
+- `verify:showcase` — 聯運分頁雙層對帳:手抄 8 邊分項加總與 16 組合排行 vs 官方前 12 名;全網路 256 邊分項加總、6 條走廊分數重算、手抄 vs CSV 逐位(≤1e-6)、Rank 1 = 0.928146
 - `verify:algos` — 檢查**行為**而非數字:振幅峰值是否落在理論位置、過轉是否真的損失機率、GAS 是否在多數種子命中、**是否曾宣稱低於真實最優**、QAOA 收斂是否單調
 
 新增任何參數的原則:**先與已發表數字對帳,對得上才上線;對不上就標「未驗證」或不做。** 現有的 `cost_norm_hypothesis` 就是這樣處理的。
@@ -169,7 +176,7 @@ npm run verify     # engine + risk + algos + typecheck
 
 | 缺的檔 | 解鎖 | 優先度 |
 |---|---|---|
-| `QLogistics_Champion_ProposalAligned.csv` | **16q 逐邊分項**(滑桿已在 0.9281 實例用筆記本輸出先做出來)+ 30 港完整網路 | 🥇 最高 |
+| ~~`QLogistics_Champion_ProposalAligned.csv`~~ | **已取得**(graph_q9)。解鎖:0.9281 家族全網路(9 港/64 pair/256 mode-edge)+ 絕對權重驗證 + 走廊排行。注意:CSV 路網也只有 9 港(Antwerp/Busan/Dubai/Hamburg/LA/Marseille/RTM/SHA/SIN),**沒有 30 港** | ✅ |
 | 其他 ising JSON | 證據包有 40q 三變體(40/rcm/sparse),**> 22 變數不能即時**,只可做靜態分析;≤22 的多走廊實例仍缺 | 🥈 |
 | ~~`port_hazards_v2.json`~~ | **已取得**(證據包),收進 q9_data、稽核分頁展示、verify:risk 對帳 | ✅ |
 | 30q `gas_result.json` | 30q 乾淨結果,補完 16/30/40q 三段對比。**從未 commit 進任何 branch** —— 在平台 `~/qarp_q9/outputs/`,拉回指令見上游 `platform_gas/README.md`(qsim → VPS → 本機) | 中 |
@@ -177,7 +184,7 @@ npm run verify     # engine + risk + algos + typecheck
 
 **權重滑桿是唯一真正卡住的東西。** 現在 16 條航段只有合成後的單一 `score`,拆不開。`edges.json` 裡的 `cost_norm_hypothesis` / `risk_norm_hypothesis` 是我反推的假設(score = (1−λ)·cost + λ·risk_dest/max,相關係數 0.52、implied cost 全落在 [0,1]),**未經驗證,不可對外標示為事實**。
 
-拿到 CSV 後要先驗證 `Σ權重×分項 == edge_score_q9`,對得上才做成滑桿。
+CSV 對帳已完成:256 邊 Σ分項==score 到 3.9e-16;絕對權重 α=0.30、β=0.20 與未加權欄位比值精確一致(1e-16/1e-14),γ₁γ₂γ₃=0.20/0.15/0.15 一致至 ~3%(聚合效應,extract 腳本以 5% 容差鎖住)。
 
 ---
 
@@ -227,7 +234,8 @@ tools/precompute.py       離線產生資料包(讀上游 repo)
 tools/verify_engine.ts    QUBO 對帳(137 點掃描)
 tools/verify_risk.ts      蒙地卡羅對帳(四條航線)
 tools/verify_algos.ts     Grover / QAOA / SA 行為檢查
-src/data/q9_data/         打包進建置的資料(11 個 JSON;showcase.json 手抄自 Colab 筆記本輸出,port_hazards_v2.json 來自證據包)
+src/data/q9_data/         打包進建置的資料(12 個 JSON;showcase* 來自 Colab bundle,port_hazards_v2 來自證據包)
+tools/extract_showcase_network.py  從 graph_q9 抽 0.9281 全網路(含權重比值斷言)
 src/data/index.ts         型別化存取 + 格式化函式 + CRITICAL_A
 src/engine/model.ts       QUBO 求解、航線解碼、能量直方圖
 src/engine/risk.ts        蒙地卡羅與 CVaR
