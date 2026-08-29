@@ -18,6 +18,7 @@ import auditJson from "./q9_data/audit.json";
 import result40Json from "./q9_data/result_40q.json";
 import showcaseJson from "./q9_data/showcase.json";
 import hazardsV2Json from "./q9_data/port_hazards_v2.json";
+import showcaseNetworkJson from "./q9_data/showcase_network.json";
 
 export const meta = metaJson as Meta & {
   problem_name: string;
@@ -115,6 +116,32 @@ export const showcase = showcaseJson as {
     best: number | null; median: number | null; std: number | null;
     depth: number | null; two_qubit_gates: number | null;
   }[];
+};
+
+export interface ShowcaseEdge {
+  pair: string;
+  origin: string;
+  destination: string;
+  mode: string;
+  score: number;
+  alpha: number;
+  beta: number;
+  gamma1: number;
+  gamma2: number;
+  gamma3: number;
+  distance_km: number;
+  lead_time_days: number;
+}
+
+/** The 0.9281 family's full network, extracted from the Colab bundle's graph_q9 artifacts. */
+export const showcaseNetwork = showcaseNetworkJson as {
+  source: string;
+  score_column: string;
+  weights: { alpha: number; beta: number; gamma1: number; gamma2: number; gamma3: number };
+  weights_source: string;
+  nodes: { port: string; country: string; iso3: string }[];
+  edges: ShowcaseEdge[];
+  corridor_paths: { rank: number; path: string[]; pairs: string[]; score: number }[];
 };
 
 export interface HazardSource {
