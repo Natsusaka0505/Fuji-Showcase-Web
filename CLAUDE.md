@@ -53,6 +53,24 @@ ising(x) = Σ score_e · x_e + A · Σ_v (flow_v(x) − rhs_v)² − offset
 
 ---
 
+## 可調起終點與災害情境(2a 互動層)
+
+### 起終點(rhs 參數化)
+
+`Q9Model` 建構子接受 `endpoints`,rhs 由起終點推導(+1 起點、−1 終點);`store.ts` 以 `${source}→${target}` 為 key 快取 model(~20 ms/組,session 存活)。路網稀疏且單向(LAX 純 sink),PairPicker 只列可達組合 —— `reachableTargets` 的依據:**簡單有向路徑 ⟺ 存在合法航線**(路徑天然流量守恆)。
+
+非預設組合 = 瀏覽器端衍生實例,從 store 取 `derivedPair`。所有掛已發表數字的地方(vs −97.4936、A* 掃描卡、penalty hint)都要 gate。AlgoPanel 錨點因此改為即時能量最低值,不再引用 baked optimum。
+
+### 災害情境(per-port 升級)
+
+`RiskParams` 增 `typhoonEscalatedPorts` / `quakeEscalatedPorts` / `hazardEscalation`。**空集合必須 bit-for-bit 復現擬合基線**(verify:risk 鎖定)。戰爭 = 既有 `blockedPorts` 硬封鎖(QUBO 層),不進蒙地卡羅 —— 只有蘇伊士有擬合過的衝突係數。零地震港 UI 顯示「無基線」不可點。
+
+### 風險排序
+
+排行分頁「風險 CVaR」模式對每條合法航線各跑一次 MC,情境數 cap 4,000 維持拖曳流暢。**營運分數與風險 USD 是兩套量綱,分開呈現、絕不合成單一指標** —— score→USD 換算沒有依據(見口徑紀律 5)。
+
+---
+
 ## 不可違反的口徑紀律
 
 這幾條是比賽的誠實性底線,改動任何顯示文字前先確認沒有踩到:
@@ -62,6 +80,7 @@ ising(x) = Σ score_e · x_e + A · Σ_v (flow_v(x) − rhs_v)² − offset
 3. **GAS 近似比列「—」,不可硬算。** 近似比只對可行解有意義;GAS 那列 `feasible=false`,`-44.5631 ÷ -97.4936 = 0.457` 不是合法近似比。
 4. **每日延誤成本 267k 是 estimate 級**,由 Drewry/Alphaliner 推算,非官方統計。顯示處要標。
 5. **航段的 cost/time/geo/port/weather 分項是推測。** 見下方「缺失資料」。任何顯示都要標 hypothesis。
+6. **非 SIN→LAX 起終點是衍生情境。** 未在比賽平台跑過,UI 必掛「衍生情境」標示,不得與 −97.4936、A* = 0.74、掃描曲線並列比較。
 
 ---
 
@@ -73,8 +92,8 @@ npm run verify     # engine + risk + algos + typecheck
 
 **改動任何引擎後必跑,綠了才能宣稱正確。** 三個腳本檢查的東西不同:
 
-- `verify:engine` — TS 求解器 vs Python 預算結果,**137 個 penalty 掃描點逐點比對**(不是只比端點),含可行性轉折、勝出航線、作弊態計數
-- `verify:risk` — vs 報告發表的四條航線平均值與 CVaR95,含 46% 比值斷言
+- `verify:engine` — TS 求解器 vs Python 預算結果,**137 個 penalty 掃描點逐點比對**(不是只比端點),含可行性轉折、勝出航線、作弊態計數;另掃 **72 組起終點**(可達 ⟺ 有合法航線、出貨 A 下 globalMin==bestClean)與推導 rhs 對帳
+- `verify:risk` — vs 報告發表的四條航線平均值與 CVaR95,含 46% 比值斷言;災害升級三斷言:空集合 bit-identical、只影響過港航線、closed-form 與模擬 <5% 吻合
 - `verify:algos` — 檢查**行為**而非數字:振幅峰值是否落在理論位置、過轉是否真的損失機率、GAS 是否在多數種子命中、**是否曾宣稱低於真實最優**、QAOA 收斂是否單調
 
 新增任何參數的原則:**先與已發表數字對帳,對得上才上線;對不上就標「未驗證」或不做。** 現有的 `cost_norm_hypothesis` 就是這樣處理的。
@@ -93,7 +112,7 @@ npm run verify     # engine + risk + algos + typecheck
 
 **沒有 Web Worker 是刻意的** —— 前三項比一個影格還短,丟進 worker 只會增加序列化成本與複雜度。QAOA 是唯一例外,用 `useTransition` + 按鈕。
 
-若未來加入更大的實例:**變數數 ≤ 22**(2^22 = 4M 態,約 100 ms)才適合即時算。40 變數(2^40)不可能,只能播放。
+若未來加入更大的實例:**變數數 ≤ 22**(2^22 = 4M 態,約 100 ms)是全掃的理論上限,但 `energies()` 每次 solve 配置 2×2^n 的 Float64Array,n=22 暫存 64 MB,手機撐不住 —— 實務即時上限抓 **n ≤ 20**,且要先把 `energies()` 改成 buffer 重用。更大的路網走兩層:路由/風險層用圖演算法(Yen k-shortest + 既有 MC,規模不設限);量子展示層由選定走廊動態抽 ≤ 20 邊的子圖建 QUBO,六個分頁照用。40 變數(2^40)不可能,只能播放。
 
 ---
 
@@ -166,6 +185,10 @@ npm run precompute && npm run verify
 npm install --cache /tmp/npmcache
 ```
 
+### CSS grid 手機溢位
+
+grid item 預設 `min-width: auto`,子孫的 `min-w-[440px]` 表格會把單欄 grid 撐得比 viewport 寬(內層的 `overflow-x-auto` 包裹擋不住 —— 它不改變 grid item 的 min-content 貢獻),於是 body 橫向捲、sticky navbar 看似沒填滿。解法已就位:`Card` 根節點掛 `min-w-0`、Dashboard 外殼掛 `overflow-x-clip`(`clip` 不建立 scroll container,不破壞 sticky)。別拿掉 Card 的 `min-w-0`。
+
 ### 歷史:曾經是 React Native
 
 初版用 Expo 做成 app,後來改成網站。轉換時**兩個引擎與驗證腳本一行沒改** —— 它們是純 TS,沒有任何 RN 依賴。只有版面層重寫,charts 從 `react-native-svg` 換成原生 SVG(標籤語法幾乎相同)。
@@ -187,7 +210,7 @@ src/engine/model.ts       QUBO 求解、航線解碼、能量直方圖
 src/engine/risk.ts        蒙地卡羅與 CVaR
 src/engine/grover.ts      Grover 振幅放大與 BBHT
 src/engine/qaoa.ts        QAOA 態向量與模擬退火
-src/lib/store.ts          共用參數 context;兩個引擎在 render 期間執行
+src/lib/store.ts          共用參數 context;model 依起終點快取;兩個引擎在 render 期間執行
 src/components/ui.tsx     Card / Stat / Chip / Slider / Toggle / Caveat
 src/components/charts.tsx Histogram / SweepChart / TailChart / LineChart / Bar / QubitScale
 src/components/WorldMap   等距投影,跨換日線的航段會斷成兩段
