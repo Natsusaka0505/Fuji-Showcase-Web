@@ -4,10 +4,12 @@ import { WorldMap } from "@/components/WorldMap";
 import { SweepChart } from "@/components/charts";
 import { Card, Stat, Chip, Route, Caveat, Prose, Mono } from "@/components/ui";
 import { useStore } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 import { ports, penaltySweep, solutions, meta, CRITICAL_A, fmtCost } from "@/data";
 
 export function MapPanel() {
   const { params, togglePort, solution, model, derived } = useStore();
+  const { t } = useI18n();
   const best = solution.bestClean;
   const cheating = solution.cheatStates > 0;
   const atOptimum = best ? Math.abs(best.cost - solutions.optimum) < 1e-9 : false;
@@ -15,76 +17,77 @@ export function MapPanel() {
   return (
     <div className="grid gap-4 xl:grid-cols-2">
       <Card
-        title="九港路網"
-        subtitle={`${model.source} → ${model.target}｜16 條候選航段 = 16 qubits`}
-        right={<Chip label={`${solution.ranking.length} 條可行`} tone="quantum" />}
+        title={t("九港路網")}
+        subtitle={t("{src} → {tgt}｜16 條候選航段 = 16 qubits", { src: model.source, tgt: model.target })}
+        right={<Chip label={t("{n} 條可行", { n: solution.ranking.length })} tone="quantum" />}
         className="xl:col-span-2"
       >
         <WorldMap route={best} blockedPorts={params.blockedPorts} onPortClick={togglePort} />
-        <p className="mt-2 text-center text-[10px] text-ink-faint">點港口可切換封鎖,航線即時重算</p>
+        <p className="mt-2 text-center text-[10px] text-ink-faint">{t("點港口可切換封鎖,航線即時重算")}</p>
       </Card>
 
       <Card
-        title={cheating ? "最佳解不可行" : "最佳航線"}
-        subtitle={cheating ? "penalty 太低,演算法找到了作弊解" : undefined}
-        right={<Chip label={cheating ? "違規" : "可行"} tone={cheating ? "bad" : "good"} filled />}
+        title={cheating ? t("最佳解不可行") : t("最佳航線")}
+        subtitle={cheating ? t("penalty 太低,演算法找到了作弊解") : undefined}
+        right={<Chip label={cheating ? t("違規") : t("可行")} tone={cheating ? "bad" : "good"} filled />}
       >
         {best ? (
           <>
             <Route iso={best.routeIso} className="mb-4" />
             <div className="flex gap-3">
-              <Stat label="成本" value={fmtCost(best.cost)} tone="gold" />
-              <Stat label="航段" value={String(best.nEdges)} unit="段" />
-              <Stat label="轉運" value={String(best.route.length - 2)} unit="港" />
+              <Stat label={t("成本")} value={fmtCost(best.cost)} tone="gold" />
+              <Stat label={t("航段")} value={String(best.nEdges)} unit={t("段")} />
+              <Stat label={t("轉運")} value={String(best.route.length - 2)} unit={t("港")} />
               {!derived && (
                 <Stat
-                  label="vs 最佳"
-                  value={atOptimum ? "命中" : `+${(best.cost - solutions.optimum).toFixed(3)}`}
+                  label={t("vs 最佳")}
+                  value={atOptimum ? t("命中") : `+${(best.cost - solutions.optimum).toFixed(3)}`}
                   tone={atOptimum ? "good" : "warn"}
                 />
               )}
             </div>
             {derived && (
               <Caveat>
-                衍生情境(自訂起終點或 λ):不與已發表最優 −97.4936 對比(該數字僅屬出貨實例)。
+                {t("衍生情境(自訂起終點或 λ):不與已發表最優 −97.4936 對比(該數字僅屬出貨實例)。")}
               </Caveat>
             )}
           </>
         ) : (
-          <p className="py-6 text-center text-sm text-bad">所有可行航線都被封鎖了</p>
+          <p className="py-6 text-center text-sm text-bad">{t("所有可行航線都被封鎖了")}</p>
         )}
       </Card>
 
       <Card
-        title="Penalty 為什麼必要"
-        subtitle="拖動側欄 penalty_A,看約束何時失效"
+        title={t("Penalty 為什麼必要")}
+        subtitle={t("拖動側欄 penalty_A,看約束何時失效")}
         right={
           <Chip
-            label={cheating ? `${solution.cheatStates} 個作弊態` : "0 作弊態"}
+            label={cheating ? t("{n} 個作弊態", { n: solution.cheatStates }) : t("0 作弊態")}
             tone={cheating ? "bad" : "good"}
           />
         }
       >
         <SweepChart points={penaltySweep.points} current={params.penaltyA} />
         <Prose>
-          縱軸 = 能量比最佳合法航線更低的狀態數(對數)。這些是量子會選、但根本不是一條連貫航線的「作弊解」。
-          A 低於 <Mono>{CRITICAL_A.toFixed(2)}</Mono> 時作弊態出現,A=0 時多達{" "}
-          <Mono>{penaltySweep.points[0].n_below_best_clean}</Mono> 個 —— 演算法會選「什麼都不選」拿 0 分。
+          {t("縱軸 = 能量比最佳合法航線更低的狀態數(對數)。這些是量子會選、但根本不是一條連貫航線的「作弊解」。A 低於")}{" "}
+          <Mono>{CRITICAL_A.toFixed(2)}</Mono>{" "}
+          {t("時作弊態出現,A=0 時多達")}{" "}
+          <Mono>{penaltySweep.points[0].n_below_best_clean}</Mono>{" "}
+          {t("個 —— 演算法會選「什麼都不選」拿 0 分。")}
         </Prose>
         <div className="mt-3 flex gap-3">
-          <Stat label="臨界 A*" value={CRITICAL_A.toFixed(2)} tone="good" />
-          <Stat label="出貨值" value={meta.penalty_A_default.toFixed(2)} tone="gold" />
-          <Stat label="安全邊際" value={`${(meta.penalty_A_default / CRITICAL_A).toFixed(1)}×`} />
+          <Stat label={t("臨界 A*")} value={CRITICAL_A.toFixed(2)} tone="good" />
+          <Stat label={t("出貨值")} value={meta.penalty_A_default.toFixed(2)} tone="gold" />
+          <Stat label={t("安全邊際")} value={`${(meta.penalty_A_default / CRITICAL_A).toFixed(1)}×`} />
         </div>
         {derived && (
           <Caveat>
-            掃描曲線、臨界 A* 與安全邊際為出貨實例(SIN→LAX、λ=0.4)的預算資料;
-            卡片右上的作弊態計數則依目前設定即時計算。
+            {t("掃描曲線、臨界 A* 與安全邊際為出貨實例(SIN→LAX、λ=0.4)的預算資料;卡片右上的作弊態計數則依目前設定即時計算。")}
           </Caveat>
         )}
       </Card>
 
-      <Card title="港口風險" subtitle="點列可切換封鎖" className="xl:col-span-2">
+      <Card title={t("港口風險")} subtitle={t("點列可切換封鎖")} className="xl:col-span-2">
         <ul className="space-y-1">
           {[...ports].sort((a, b) => b.port_risk - a.port_risk).map((p) => {
             const blocked = params.blockedPorts.includes(p.iso);
@@ -109,14 +112,14 @@ export function MapPanel() {
                   <span className="w-10 shrink-0 text-right font-mono text-xs tabular-nums text-ink-dim">
                     {p.port_risk.toFixed(1)}
                   </span>
-                  {blocked && <Chip label="封鎖" tone="bad" />}
+                  {blocked && <Chip label={t("封鎖")} tone="bad" />}
                 </button>
               </li>
             );
           })}
         </ul>
         <Caveat>
-          風險分數為 QUBO 模型輸入值。地震與颱風原始數字見「稽核」分頁,每港可對 USGS 官方即時查證。
+          {t("風險分數為 QUBO 模型輸入值。地震與颱風原始數字見「稽核」分頁,每港可對 USGS 官方即時查證。")}
         </Caveat>
       </Card>
     </div>

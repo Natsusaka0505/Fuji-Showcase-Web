@@ -12,6 +12,7 @@
 
 import { memo } from "react";
 import { ports, edgeData } from "@/data";
+import { useI18n } from "@/lib/i18n";
 import type { RouteSolution } from "@/engine/model";
 
 const W = 360;
@@ -60,6 +61,7 @@ export const WorldMap = memo(function WorldMap({
   blockedPorts: readonly string[];
   onPortClick?: (iso: string) => void;
 }) {
+  const { t } = useI18n();
   const onRouteLegs = new Set<string>();
   if (route) {
     for (let i = 0; i < route.routeIso.length - 1; i++) {
@@ -69,7 +71,7 @@ export const WorldMap = memo(function WorldMap({
 
   return (
     <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="九港航線網路圖">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={t("九港航線網路圖")}>
         <rect x={0} y={0} width={W} height={H} rx={8} fill="var(--color-bg)" />
         {[1, 2, 3].map((i) => (
           <line key={`h${i}`} x1={0} y1={(H / 4) * i} x2={W} y2={(H / 4) * i}
@@ -114,7 +116,7 @@ export const WorldMap = memo(function WorldMap({
           return (
             <g key={p.iso} onClick={() => onPortClick?.(p.iso)}
               className={onPortClick ? "cursor-pointer" : undefined}>
-              <title>{`${p.name}｜風險 ${p.port_risk.toFixed(1)}${blocked ? "｜已封鎖" : ""}`}</title>
+              <title>{`${p.name}｜${t("風險")} ${p.port_risk.toFixed(1)}${blocked ? `｜${t("已封鎖")}` : ""}`}</title>
               {onRoute && <circle cx={x} cy={y} r={7} fill="var(--color-gold)" opacity={0.22} />}
               <circle cx={x} cy={y} r={onRoute ? 4.2 : 3.2}
                 fill={blocked ? "var(--color-bg)" : riskColor(p.port_risk)}
@@ -136,10 +138,10 @@ export const WorldMap = memo(function WorldMap({
         })}
       </svg>
       <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
-        <Legend color="var(--color-gold)" label="最佳航線" />
-        <Legend color="var(--color-border)" label="候選航段" />
-        <Legend color={riskColor(50)} label="高風險港" />
-        <Legend color="var(--color-bad)" label="封鎖" />
+        <Legend color="var(--color-gold)" label={t("最佳航線")} />
+        <Legend color="var(--color-border)" label={t("候選航段")} />
+        <Legend color={riskColor(50)} label={t("高風險港")} />
+        <Legend color="var(--color-bad)" label={t("封鎖")} />
       </div>
     </div>
   );

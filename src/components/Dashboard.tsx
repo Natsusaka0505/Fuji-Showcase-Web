@@ -10,6 +10,7 @@
 
 import { useMemo, useState } from "react";
 import { StoreContext, useStoreValue, useStore, DEFAULT_PARAMS } from "@/lib/store";
+import { I18nProvider, useI18n } from "@/lib/i18n";
 import { Slider, Toggle, Chip, Select } from "@/components/ui";
 import { reachableTargets } from "@/engine/model";
 import { MapPanel } from "@/components/panels/MapPanel";
@@ -34,9 +35,11 @@ const TABS = [
 export function Dashboard() {
   const store = useStoreValue();
   return (
-    <StoreContext.Provider value={store}>
-      <Shell />
-    </StoreContext.Provider>
+    <I18nProvider>
+      <StoreContext.Provider value={store}>
+        <Shell />
+      </StoreContext.Provider>
+    </I18nProvider>
   );
 }
 
@@ -44,6 +47,7 @@ function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("map");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { solution, isDefault, reset, derived } = useStore();
+  const { locale, setLocale, t } = useI18n();
   const Panel = TABS.find((t) => t.key === tab)!.Panel;
   const cheating = solution.cheatStates > 0;
 
@@ -54,31 +58,36 @@ function Shell() {
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-bold tracking-wide text-gold">Q-Logistics</h1>
             <p className="text-[10px] text-ink-faint">
-              風險感知全球供應鏈路徑優化｜Fujitsu Quantum Simulator Challenge 2025-26
+              {t("風險感知全球供應鏈路徑優化｜Fujitsu Quantum Simulator Challenge 2025-26")}
             </p>
           </div>
-          {derived && <Chip label="衍生情境" tone="warn" filled />}
-          {cheating && <Chip label="約束失效" tone="bad" filled />}
+          {derived && <Chip label={t("衍生情境")} tone="warn" filled />}
+          {cheating && <Chip label={t("約束失效")} tone="bad" filled />}
           {!isDefault && (
             <button type="button" onClick={reset}
               className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-ink-dim transition-colors hover:border-ink-dim hover:text-ink">
-              重設
+              {t("重設")}
             </button>
           )}
+          <button type="button" onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
+            aria-label={locale === "zh" ? "Switch to English" : "切換為中文"}
+            className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-bold text-ink-dim transition-colors hover:border-ink-dim hover:text-ink">
+            {locale === "zh" ? "EN" : "中"}
+          </button>
           <button type="button" onClick={() => setDrawerOpen((o) => !o)}
             aria-expanded={drawerOpen}
             className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-ink-dim transition-colors hover:text-ink lg:hidden">
-            參數 {drawerOpen ? "▲" : "▼"}
+            {t("參數")} {drawerOpen ? "▲" : "▼"}
           </button>
         </div>
-        <nav className="flex gap-1 overflow-x-auto px-3 pb-2" aria-label="分頁">
-          {TABS.map((t) => (
-            <button key={t.key} type="button" onClick={() => setTab(t.key)}
-              aria-current={tab === t.key ? "page" : undefined}
+        <nav className="flex gap-1 overflow-x-auto px-3 pb-2" aria-label={t("分頁")}>
+          {TABS.map(({ key, label }) => (
+            <button key={key} type="button" onClick={() => setTab(key)}
+              aria-current={tab === key ? "page" : undefined}
               className={`shrink-0 rounded-full px-3 py-1 text-xs transition-colors ${
-                tab === t.key ? "bg-gold font-bold text-bg" : "text-ink-dim hover:bg-surface hover:text-ink"
+                tab === key ? "bg-gold font-bold text-bg" : "text-ink-dim hover:bg-surface hover:text-ink"
               }`}>
-              {t.label}
+              {t(label)}
             </button>
           ))}
         </nav>
@@ -99,11 +108,12 @@ function Shell() {
 /** The parameters every panel reacts to. */
 function ParamColumn() {
   const { params, setParams, setRisk, solution, derived } = useStore();
+  const { t } = useI18n();
   const cheating = solution.cheatStates > 0;
 
   return (
     <div>
-      <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">共用參數</h2>
+      <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t("共用參數")}</h2>
       <PairPicker />
       <Slider
         label="penalty_A"
@@ -115,16 +125,16 @@ function ParamColumn() {
         hint={
           cheating
             ? derived
-              ? `有 ${solution.cheatStates} 個作弊態勝過最佳合法航線`
-              : `低於臨界 ${CRITICAL_A}:有 ${solution.cheatStates} 個作弊態勝過最佳合法航線`
+              ? t("有 {n} 個作弊態勝過最佳合法航線", { n: solution.cheatStates })
+              : t("低於臨界 {a}:有 {n} 個作弊態勝過最佳合法航線", { a: CRITICAL_A, n: solution.cheatStates })
             : derived
-              ? "流量守恆約束強度｜臨界 A* 與出貨值僅對出貨實例校準"
-              : `流量守恆約束強度｜臨界 ${CRITICAL_A}、出貨值 ${meta.penalty_A_default.toFixed(2)}`
+              ? t("流量守恆約束強度｜臨界 A* 與出貨值僅對出貨實例校準")
+              : t("流量守恆約束強度｜臨界 {a}、出貨值 {d}", { a: CRITICAL_A, d: meta.penalty_A_default.toFixed(2) })
         }
         tone={cheating ? "bad" : "gold"}
       />
       <Slider
-        label="風險權重 λ"
+        label={t("風險權重 λ")}
         value={params.riskLambda}
         min={0}
         max={1}
@@ -133,12 +143,12 @@ function ParamColumn() {
         tone="quantum"
         hint={
           params.riskLambda === meta.risk_lambda_default
-            ? "score = 距離 + λ·目的港風險 + 市場項｜出貨值 0.40,公式與上游 build_ising_40q.py 逐邊對帳"
-            : "非出貨 λ = 衍生能量地貌;−97.4936 等已發表數字不適用"
+            ? t("score = 距離 + λ·目的港風險 + 市場項｜出貨值 0.40,公式與上游 build_ising_40q.py 逐邊對帳")
+            : t("非出貨 λ = 衍生能量地貌;−97.4936 等已發表數字不適用")
         }
       />
       <Slider
-        label="每日延誤成本"
+        label={t("每日延誤成本")}
         value={params.risk.dailyDelayCostUsd}
         min={50000}
         max={600000}
@@ -148,15 +158,15 @@ function ParamColumn() {
         tone="quantum"
       />
       <Toggle
-        label="荷莫茲海峽封鎖"
+        label={t("荷莫茲海峽封鎖")}
         value={params.risk.hormuzBlockade}
         onChange={(v) => setRisk({ hormuzBlockade: v })}
-        hint="繞好望角 +12 天"
+        hint={t("繞好望角 +12 天")}
       />
       {params.blockedPorts.length > 0 && (
         <div className="mt-4 border-t border-border pt-3">
           <div className="mb-2 text-[10px] uppercase tracking-wide text-ink-faint">
-            已封鎖 {params.blockedPorts.length} 港
+            {t("已封鎖 {n} 港", { n: params.blockedPorts.length })}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {params.blockedPorts.map((iso) => (
@@ -170,8 +180,7 @@ function ParamColumn() {
         </div>
       )}
       <p className="mt-4 border-t border-border pt-3 text-[10px] leading-relaxed text-ink-faint">
-        全部運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)並重跑
-        10,000 次蒙地卡羅情境(~2 ms)。
+        {t("全部運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)並重跑 10,000 次蒙地卡羅情境(~2 ms)。")}
       </p>
     </div>
   );
@@ -180,6 +189,7 @@ function ParamColumn() {
 /** Endpoint pair picker. Only pairs joined by a directed path are offered. */
 function PairPicker() {
   const { params, setParams, derivedPair } = useStore();
+  const { t } = useI18n();
   const sources = useMemo(
     () => edgeData.incidence_ports.filter((p) => reachableTargets(edgeData, p).length > 0),
     [],
@@ -201,14 +211,13 @@ function PairPicker() {
 
   return (
     <div className="mb-4">
-      <Select label="起點" value={params.source} options={opt(sources)} onChange={pickSource} />
-      <Select label="終點" value={params.target} options={opt(targets)}
+      <Select label={t("起點")} value={params.source} options={opt(sources)} onChange={pickSource} />
+      <Select label={t("終點")} value={params.target} options={opt(targets)}
         onChange={(target) => setParams((p) => ({ ...p, target }))}
-        hint="只列出有向路網可達的港口" />
+        hint={t("只列出有向路網可達的港口")} />
       {derivedPair && (
         <p className="rounded-lg border-l-[3px] border-warn bg-surface-alt p-2 text-[10px] leading-relaxed text-ink-dim">
-          非預設起終點為瀏覽器端衍生實例,未在比賽平台驗證;−97.4936、A* = 0.74
-          等已發表數字僅屬 Singapore → Los Angeles。
+          {t("非預設起終點為瀏覽器端衍生實例,未在比賽平台驗證;−97.4936、A* = 0.74 等已發表數字僅屬 Singapore → Los Angeles。")}
         </p>
       )}
     </div>

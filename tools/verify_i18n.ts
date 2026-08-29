@@ -1,0 +1,70 @@
+/**
+ * i18n completeness gate.
+ *
+ * Scans every component for t("...") keys and collects the display strings the
+ * data JSONs carry, then asserts: each key has an EN entry, every {placeholder}
+ * survives translation, and no dictionary entry is orphaned.
+ * Run: node --experimental-strip-types tools/verify_i18n.ts
+ */
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { EN } from "../src/lib/i18n-en.ts";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const DATA = join(ROOT, "src/data/q9_data");
+const read = (f: string) => JSON.parse(readFileSync(join(DATA, f), "utf8"));
+
+function walk(dir: string): string[] {
+  return readdirSync(dir).flatMap((n) => {
+    const p = join(dir, n);
+    return statSync(p).isDirectory() ? walk(p) : p.endsWith(".tsx") ? [p] : [];
+  });
+}
+
+const keys = new Set<string>();
+for (const f of walk(join(ROOT, "src/components"))) {
+  for (const m of readFileSync(f, "utf8").matchAll(/\bt\(\s*"((?:[^"\\]|\\.)*)"/g)) {
+    keys.add(m[1]);
+  }
+}
+// Strings rendered through t(variable): tab labels, component labels, data text.
+for (const k of ["地圖", "排行", "演算法", "風險", "聯運", "40q", "稽核"]) keys.add(k);
+for (const k of ["α 成本", "β 時間", "γ₁ 地緣", "γ₂ 港口", "γ₃ 天氣"]) keys.add(k);
+const cvar = read("cvar.json");
+for (const r of cvar.routes) keys.add(r.name);
+const algo = read("algo_compare.json");
+for (const r of algo.rows) {
+  keys.add(r.algo);
+  if (r.note) keys.add(r.note);
+}
+keys.add(read("meta.json").caveat);
+for (const s of read("showcase.json").scenarios) keys.add(s.label);
+
+let failures = 0;
+const check = (name: string, ok: boolean, detail = "") => {
+  console.log(`${ok ? "  ok  " : "  FAIL"}  ${name}${detail ? `   ${detail}` : ""}`);
+  if (!ok) failures++;
+};
+
+const missing = [...keys].filter((k) => !(k in EN));
+check(`every used key has an EN entry (${keys.size} keys)`, missing.length === 0);
+for (const k of missing) console.log(`        missing: ${k.slice(0, 60)}`);
+
+const phBad: string[] = [];
+for (const k of keys) {
+  const en = EN[k];
+  if (!en) continue;
+  for (const m of k.matchAll(/\{(\w+)\}/g)) {
+    if (!en.includes(`{${m[1]}}`)) phBad.push(`${m[0]} lost in: ${k.slice(0, 40)}`);
+  }
+}
+check("every {placeholder} survives translation", phBad.length === 0);
+for (const p of phBad) console.log(`        ${p}`);
+
+const orphans = Object.keys(EN).filter((k) => !keys.has(k));
+check("no orphaned dictionary entries", orphans.length === 0, `${orphans.length} orphans`);
+for (const o of orphans) console.log(`        orphan: ${o.slice(0, 60)}`);
+
+console.log(failures ? `\n${failures} FAILURE(S)` : "\nall checks passed");
+process.exit(failures ? 1 : 0);

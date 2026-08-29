@@ -1,6 +1,8 @@
 /** SVG charts. All drawn in a fixed viewBox and scaled to their container. */
 "use client";
 
+import { useI18n } from "@/lib/i18n";
+
 const W = 320;
 
 /** Energy landscape of all 65 536 states, with markers for notable values. */
@@ -10,6 +12,7 @@ export function Histogram({ counts, binEdges, markers, height = 120 }: {
   markers?: { value: number; color: string; label: string }[];
   height?: number;
 }) {
+  const { t } = useI18n();
   const n = counts.length;
   const lo = binEdges[0];
   const hi = binEdges[n];
@@ -22,7 +25,7 @@ export function Histogram({ counts, binEdges, markers, height = 120 }: {
   const xOf = (v: number) => ((v - lo) / (hi - lo || 1)) * W;
 
   return (
-    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label="能量分布直方圖">
+    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label={t("能量分布直方圖")}>
       {Array.from({ length: n }, (_, i) => {
         const h = scale(counts[i]) * (height - 18);
         return h <= 0 ? null : (
@@ -31,16 +34,23 @@ export function Histogram({ counts, binEdges, markers, height = 120 }: {
         );
       })}
       <line x1={0} y1={height - 13} x2={W} y2={height - 13} stroke="var(--color-border)" strokeWidth={1} />
-      {markers?.map((m, i) => (
-        <line key={i} x1={xOf(m.value)} y1={4} x2={xOf(m.value)} y2={height - 13}
-          stroke={m.color} strokeWidth={1.4} strokeDasharray="3 2" />
-      ))}
       {markers?.map((m, i) => {
         // Coinciding markers (the shipped-A case: best legal == global min) would
-        // stack their labels, so each collision pushes the later label a row down.
+        // hide one line under the other, so near-coincident lines fan out sideways.
+        const near = markers.filter((o) => Math.abs(xOf(o.value) - xOf(m.value)) < 3);
+        const k = near.indexOf(m);
+        const dx = near.length > 1 ? (k - (near.length - 1) / 2) * 2.6 : 0;
+        const x = xOf(m.value) + dx;
+        return (
+          <line key={i} x1={x} y1={4} x2={x} y2={height - 13}
+            stroke={m.color} strokeWidth={1.4} strokeDasharray="3 2" />
+        );
+      })}
+      {markers?.map((m, i) => {
+        // Stacked labels step down a row per collision instead of overprinting.
         const row = markers.slice(0, i).filter((o) => Math.abs(xOf(o.value) - xOf(m.value)) < 70).length;
         return (
-          <text key={`t${i}`} x={Math.min(W - 2, xOf(m.value) + 3)} y={11 + row * 10}
+          <text key={`t${i}`} x={Math.min(W - 40, xOf(m.value) + 5)} y={11 + row * 10}
             fontSize={8} fontWeight="700" fill={m.color}>{m.label}</text>
         );
       })}
@@ -56,6 +66,7 @@ export function SweepChart({ points, current, height = 130 }: {
   current: number;
   height?: number;
 }) {
+  const { t } = useI18n();
   const maxA = points[points.length - 1].penalty_A;
   const maxN = Math.max(...points.map((p) => p.n_below_best_clean), 1);
   const xOf = (a: number) => (a / maxA) * W;
@@ -68,7 +79,7 @@ export function SweepChart({ points, current, height = 130 }: {
     Math.abs(b.penalty_A - current) < Math.abs(a.penalty_A - current) ? b : a);
 
   return (
-    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label="penalty 掃描曲線">
+    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label={t("penalty 掃描曲線")}>
       <rect x={0} y={0} width={xOf(critical)} height={height - 15} fill="var(--color-bad)" opacity={0.09} />
       <path d={d} stroke="var(--color-bad)" strokeWidth={1.6} fill="none" />
       <line x1={xOf(critical)} y1={0} x2={xOf(critical)} y2={height - 15}
@@ -121,6 +132,7 @@ export function TailChart({ samples, cvar, mean, height = 110 }: {
   mean: number;
   height?: number;
 }) {
+  const { t } = useI18n();
   const n = samples.length;
   const lo = samples[0];
   const hi = samples[Math.floor(n * 0.995)];
@@ -137,7 +149,7 @@ export function TailChart({ samples, cvar, mean, height = 110 }: {
   const xOf = (v: number) => ((v - lo) / (hi - lo || 1)) * W;
 
   return (
-    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label="成本分布與尾部風險">
+    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label={t("成本分布與尾部風險")}>
       {Array.from({ length: bins }, (_, i) => {
         const h = (counts[i] / (max || 1)) * (height - 20);
         const inTail = lo + i * width >= cvar;
@@ -147,7 +159,7 @@ export function TailChart({ samples, cvar, mean, height = 110 }: {
         );
       })}
       <line x1={xOf(mean)} y1={2} x2={xOf(mean)} y2={height - 13} stroke="var(--color-gold)" strokeWidth={1.4} />
-      <text x={xOf(mean) + 3} y={10} fontSize={8} fontWeight="700" fill="var(--color-gold)">平均</text>
+      <text x={xOf(mean) + 3} y={10} fontSize={8} fontWeight="700" fill="var(--color-gold)">{t("平均")}</text>
       <line x1={xOf(cvar)} y1={2} x2={xOf(cvar)} y2={height - 13}
         stroke="var(--color-bad)" strokeWidth={1.4} strokeDasharray="3 2" />
       <text x={Math.min(W - 2, xOf(cvar) + 3)} y={10} fontSize={8} fontWeight="700"
@@ -159,6 +171,7 @@ export function TailChart({ samples, cvar, mean, height = 110 }: {
 
 /** Memory doubles per qubit; the log axis is the whole point. */
 export function QubitScale({ points, height = 130 }: { points: number[]; height?: number }) {
+  const { t } = useI18n();
   const bytesFor = (q: number) => Math.pow(2, q) * 16;
   const fmt = (b: number) => {
     const u = ["B", "KB", "MB", "GB", "TB", "PB"];
@@ -171,7 +184,7 @@ export function QubitScale({ points, height = 130 }: { points: number[]; height?
   const bw = W / points.length;
 
   return (
-    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label="qubit 數與記憶體需求">
+    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label={t("qubit 數與記憶體需求")}>
       {points.map((q, i) => {
         const h = ((Math.log2(bytesFor(q)) - minLog) / (maxLog - minLog)) * (height - 30);
         const top = q === Math.max(...points);
@@ -203,6 +216,7 @@ export function LineChart({ series, refLines, height = 130, yLabel, xLabel, mark
   /** Vertical marks at specific x indices. */
   markers?: { index: number; color: string }[];
 }) {
+  const { t } = useI18n();
   const all: number[] = [];
   for (const s of series) for (let i = 0; i < s.values.length; i++) all.push(s.values[i]);
   for (const r of refLines ?? []) all.push(r.value);
@@ -216,7 +230,7 @@ export function LineChart({ series, refLines, height = 130, yLabel, xLabel, mark
   const yOf = (v: number) => height - 16 - ((v - lo) / (hi - lo)) * (height - 24);
 
   return (
-    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label={yLabel ?? "曲線圖"}>
+    <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label={yLabel ?? t("曲線圖")}>
       {refLines?.map((r, i) => (
         <g key={`ref${i}`}>
           <line x1={0} y1={yOf(r.value)} x2={W} y2={yOf(r.value)}

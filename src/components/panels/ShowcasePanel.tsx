@@ -14,6 +14,7 @@
 import { useMemo, useState } from "react";
 import { Card, Stat, Chip, Slider, Caveat, Prose, Mono } from "@/components/ui";
 import { Bar } from "@/components/charts";
+import { useI18n } from "@/lib/i18n";
 import { showcase, showcaseNetwork, type ShowcaseEdge } from "@/data";
 
 const COMP = [
@@ -30,8 +31,10 @@ const DEFAULT_W: Weights = { alpha: 1, beta: 1, gamma1: 1, gamma2: 1, gamma3: 1 
 const MODE_ZH: Record<string, string> = { Road: "公路", Rail: "鐵路", Air: "空運", Sea: "海運" };
 
 export function ShowcasePanel() {
+  const { t, locale } = useI18n();
   const [w, setW] = useState<Weights>(DEFAULT_W);
   const isDefaultW = COMP.every((c) => w[c.key] === 1);
+  const modeName = (m: string) => (locale === "zh" ? (MODE_ZH[m] ?? m) : m);
 
   // Corridor ranking over the full network: each pair takes its best mode under
   // the current weighting, so both the winning modes and the path order move.
@@ -64,35 +67,28 @@ export function ShowcasePanel() {
   return (
     <div className="grid gap-4 xl:grid-cols-2">
       <Card
-        title="0.9281 多式聯運實例"
-        subtitle={`${showcaseNetwork.nodes.length} 港、${showcaseNetwork.edges.length} 條 mode-edge 全網路｜走廊排行 ${showcaseNetwork.corridor_paths.length} 條`}
-        right={<Chip label="分項齊全" tone="good" filled />}
+        title={t("0.9281 多式聯運實例")}
+        subtitle={t("{n} 港、{m} 條 mode-edge 全網路｜走廊排行 {p} 條", { n: showcaseNetwork.nodes.length, m: showcaseNetwork.edges.length, p: showcaseNetwork.corridor_paths.length })}
+        right={<Chip label={t("分項齊全")} tone="good" filled />}
         className="xl:col-span-2"
       >
         <Prose>
-          冠軍 Colab benchmark 的 local reduced QUBO 家族:港口網路含漢堡、釜山、杜拜等
-          {showcaseNetwork.nodes.length} 港,每對港口各有公路/鐵路/空運/海運 mode-edge。
-          分項來自 bundle 的 graph_q9 原始表,**絕對權重文件明載且經資料驗證**:
-          α = {W.alpha}(與原始欄位比值精確一致)、β = {W.beta}(同)、γ₁/γ₂/γ₃ =
-          {" "}{W.gamma1}/{W.gamma2}/{W.gamma3}(一致至 ~3%,聚合效應)。
-          256 條邊逐一驗證 Σ分項 == 邊分數(3.9e-16,浮點極限)。
+          {t("冠軍 Colab benchmark 的 local reduced QUBO 家族:港口網路含漢堡、釜山、杜拜等 {n} 港,每對港口各有公路/鐵路/空運/海運 mode-edge。分項來自 bundle 的 graph_q9 原始表,絕對權重文件明載且經資料驗證:α = {a}(與原始欄位比值精確一致)、β = {b}(同)、γ₁/γ₂/γ₃ = {g1}/{g2}/{g3}(一致至 ~3%,聚合效應)。256 條邊逐一驗證 Σ分項 == 邊分數(3.9e-16,浮點極限)。", { n: showcaseNetwork.nodes.length, a: W.alpha, b: W.beta, g1: W.gamma1, g2: W.gamma2, g3: W.gamma3 })}
         </Prose>
         <Caveat>
-          口徑:0.9281 屬 local reduced 模型,與 16q ising 的 −97.4936 是**兩個不同模型**,
-          不可同圖並列。此網路(含漢堡/釜山/杜拜)與 ising 家族的九港(含高雄/可倫坡/蘇伊士)
-          也是**兩套不同路網**。
+          {t("口徑:0.9281 屬 local reduced 模型,與 16q ising 的 −97.4936 是兩個不同模型,不可同圖並列。此網路(含漢堡/釜山/杜拜)與 ising 家族的九港(含高雄/可倫坡/蘇伊士)也是兩套不同路網。")}
         </Caveat>
       </Card>
 
       <Card
-        title="邊分項解剖"
-        subtitle="冠軍走廊 8 條 mode-edge 的五分項(手抄自筆記本,已與 CSV 原檔逐位對帳)"
+        title={t("邊分項解剖")}
+        subtitle={t("冠軍走廊 8 條 mode-edge 的五分項(手抄自筆記本,已與 CSV 原檔逐位對帳)")}
         right={
           <div className="flex flex-wrap justify-end gap-x-2 gap-y-0.5">
             {COMP.map((c) => (
               <span key={c.key} className="flex items-center gap-1 text-[9px] text-ink-faint">
                 <span className="inline-block h-2 w-2 rounded-sm" style={{ background: c.color }} />
-                {c.label}
+                {t(c.label)}
               </span>
             ))}
           </div>
@@ -104,8 +100,8 @@ export function ShowcasePanel() {
             {showcase.edges.filter((e) => e.pair === pair).map((e) => (
               <div key={e.mode} className="mb-1.5 flex items-center gap-2">
                 <span className="w-16 shrink-0 text-xs text-ink">
-                  {MODE_ZH[e.mode] ?? e.mode}
-                  <span className="ml-1 text-[9px] text-ink-faint">{e.mode}</span>
+                  {modeName(e.mode)}
+                  {locale === "zh" && <span className="ml-1 text-[9px] text-ink-faint">{e.mode}</span>}
                 </span>
                 <span className="flex h-[10px] min-w-0 flex-1 overflow-hidden rounded bg-surface-alt">
                   {COMP.map((c) => (
@@ -121,23 +117,22 @@ export function ShowcasePanel() {
           </div>
         ))}
         <Prose>
-          長途的鹿特丹 → 洛杉磯段,γ₂ 港口與 γ₃ 天氣分項明顯比亞歐段厚 —— 這正是「風險已定價進邊分數」
-          的具體樣貌。空運的 β 時間分項最薄、海運最厚,和 lead time(1.7 天 vs 51 天)一致。
+          {t("長途的鹿特丹 → 洛杉磯段,γ₂ 港口與 γ₃ 天氣分項明顯比亞歐段厚 —— 這正是「風險已定價進邊分數」的具體樣貌。空運的 β 時間分項最薄、海運最厚,和 lead time(1.7 天 vs 51 天)一致。")}
         </Prose>
       </Card>
 
       <Card
-        title="α/β/γ 權重滑桿 × 走廊排行"
-        subtitle="重新加權五分項:每段的勝出運輸方式與走廊順位即時重排"
+        title={t("α/β/γ 權重滑桿 × 走廊排行")}
+        subtitle={t("重新加權五分項:每段的勝出運輸方式與走廊順位即時重排")}
         right={
           reproduces
-            ? <Chip label="復現官方排行" tone="good" filled />
-            : <Chip label={isDefaultW ? "官方權重" : "what-if 權重"} tone={isDefaultW ? "good" : "warn"} />
+            ? <Chip label={t("復現官方排行")} tone="good" filled />
+            : <Chip label={isDefaultW ? t("官方權重") : t("what-if 權重")} tone={isDefaultW ? "good" : "warn"} />
         }
       >
         <div className="grid gap-x-6 sm:grid-cols-2">
           {COMP.map((c) => (
-            <Slider key={c.key} label={`${c.label}（官方 ${c.w}）`} value={w[c.key]} min={0} max={3} step={0.05}
+            <Slider key={c.key} label={t("{l}(官方 {w})", { l: t(c.label), w: c.w })} value={w[c.key]} min={0} max={3} step={0.05}
               onChange={(v) => setW((p) => ({ ...p, [c.key]: v }))}
               format={(v) => `${v.toFixed(2)}×`}
               tone={c.key === "alpha" ? "gold" : c.key === "beta" ? "quantum" : c.key === "gamma1" ? "good" : c.key === "gamma2" ? "warn" : "bad"} />
@@ -145,7 +140,7 @@ export function ShowcasePanel() {
           {!isDefaultW && (
             <button type="button" onClick={() => setW(DEFAULT_W)}
               className="mb-4 self-end rounded-lg border border-border px-3 py-2 text-xs text-ink-dim transition-colors hover:text-ink">
-              重設為官方權重
+              {t("重設為官方權重")}
             </button>
           )}
         </div>
@@ -174,7 +169,7 @@ export function ShowcasePanel() {
                     <span key={l.pair}
                       className="rounded-full border border-border px-2 py-0.5 text-[10px] text-ink-dim">
                       {l.pair.replace("->", "→")}
-                      <span className="ml-1 font-bold text-quantum">{MODE_ZH[l.mode] ?? l.mode}</span>
+                      <span className="ml-1 font-bold text-quantum">{modeName(l.mode)}</span>
                     </span>
                   ))}
                 </div>
@@ -183,57 +178,53 @@ export function ShowcasePanel() {
           })}
         </ol>
         <Caveat>
-          滑桿是分項的**相對縮放**(1.00× = 官方權重 α{W.alpha}/β{W.beta}/γ{W.gamma1}·{W.gamma2}·{W.gamma3});
-          每段在加權後的四種運輸方式中取最優,走廊分數 = 各段最優之和。全部 1.00× 時
-          六條走廊分數與官方 corridor_paths.json 逐條一致,Rank 1 = <Mono>0.928146</Mono>。
-          把 γ₃ 天氣拉高,看勝出方式從海運/鐵路翻成空運;把 α 成本拉高則反向。
+          {t("滑桿是分項的相對縮放(1.00× = 官方權重 α{a}/β{b}/γ {g1}·{g2}·{g3});每段在加權後的四種運輸方式中取最優,走廊分數 = 各段最優之和。全部 1.00× 時六條走廊分數與官方 corridor_paths.json 逐條一致,Rank 1 =", { a: W.alpha, b: W.beta, g1: W.gamma1, g2: W.gamma2, g3: W.gamma3 })}{" "}
+          <Mono>0.928146</Mono>
+          {t("。把 γ₃ 天氣拉高,看勝出方式從海運/鐵路翻成空運;把 α 成本拉高則反向。")}
         </Caveat>
       </Card>
 
       <Card
-        title="災害情境:官方數字"
-        subtitle={`衝擊情境跑在 ${showcase.reduced_instance.name}(${showcase.reduced_instance.n_vars} 變數)上`}
-        right={<Chip label="固定紀錄" tone="faint" />}
+        title={t("災害情境:官方數字")}
+        subtitle={t("衝擊情境跑在 {name}({n} 變數)上", { name: showcase.reduced_instance.name, n: showcase.reduced_instance.n_vars })}
+        right={<Chip label={t("固定紀錄")} tone="faint" />}
       >
         {showcase.scenarios.map((s) => (
-          <Bar key={s.name} label={s.label} value={s.best_objective}
+          <Bar key={s.name} label={t(s.label)} value={s.best_objective}
             max={Math.max(...showcase.scenarios.map((x) => x.best_objective)) * 1.05}
             color={s.name === "base" ? "var(--color-good)" : "var(--color-warn)"}
             caption={s.best_objective.toFixed(6)}
             highlight={s.name === "base"} />
         ))}
         <div className="mt-3 flex gap-3">
-          <Stat label="基準最優" value="0.928146" tone="good" />
-          <Stat label="衝擊後" value="0.940109" tone="warn" />
-          <Stat label="成本上升" value="+1.3%" />
+          <Stat label={t("基準最優")} value="0.928146" tone="good" />
+          <Stat label={t("衝擊後")} value="0.940109" tone="warn" />
+          <Stat label={t("成本上升")} value="+1.3%" />
         </div>
         <Prose>
-          鹿特丹港衝擊讓原本的最優路線失寵,最優解移動到 0.940109 —— 正是上方排行第 2 名
-          「經漢堡」走廊的分數,且 QAOA 與古典最短路給出一致答案。
-          這是「災害改寫最優路線」的官方 benchmark 證據,與「風險」分頁的即時蒙地卡羅互為印證。
+          {t("鹿特丹港衝擊讓原本的最優路線失寵,最優解移動到 0.940109 —— 正是上方排行第 2 名「經漢堡」走廊的分數,且 QAOA 與古典最短路給出一致答案。這是「災害改寫最優路線」的官方 benchmark 證據,與「風險」分頁的即時蒙地卡羅互為印證。")}
         </Prose>
         <Caveat>
-          此卡為 Colab benchmark 的固定歷史紀錄,不隨本站參數變動;衝擊的量級定義在
-          benchmark 設定內,不做即時重算。
+          {t("此卡為 Colab benchmark 的固定歷史紀錄,不隨本站參數變動;衝擊的量級定義在 benchmark 設定內,不做即時重算。")}
         </Caveat>
       </Card>
 
       <Card
-        title="演算法對比(8 變數 base 情境)"
-        subtitle="同一實例、多演算法、各 3 seeds 的官方成績"
+        title={t("演算法對比(8 變數 base 情境)")}
+        subtitle={t("同一實例、多演算法、各 3 seeds 的官方成績")}
         className="xl:col-span-2"
       >
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-left">
             <thead>
               <tr className="text-[10px] uppercase tracking-wide text-ink-faint">
-                <th className="pb-1 font-normal">演算法</th>
-                <th className="pb-1 text-right font-normal">最佳</th>
-                <th className="pb-1 text-right font-normal">中位數</th>
-                <th className="pb-1 text-right font-normal">可行率</th>
-                <th className="pb-1 text-right font-normal">命中率</th>
-                <th className="pb-1 text-right font-normal">深度</th>
-                <th className="pb-1 text-right font-normal">2Q 閘</th>
+                <th className="pb-1 font-normal">{t("演算法")}</th>
+                <th className="pb-1 text-right font-normal">{t("最佳")}</th>
+                <th className="pb-1 text-right font-normal">{t("中位數")}</th>
+                <th className="pb-1 text-right font-normal">{t("可行率")}</th>
+                <th className="pb-1 text-right font-normal">{t("命中率")}</th>
+                <th className="pb-1 text-right font-normal">{t("深度")}</th>
+                <th className="pb-1 text-right font-normal">{t("2Q 閘")}</th>
               </tr>
             </thead>
             <tbody>
@@ -267,13 +258,10 @@ export function ShowcasePanel() {
           </table>
         </div>
         <Prose>
-          COBYLA 系的 QAOA 三種深度全部命中;SPSA 三次有一次落到 0.9328。ADMM 與這裡的
-          Grover-GAS 配置可行率 0% —— 誠實列出,不遮醜。WarmStart 深度只有 2 是因為初態
-          已含解資訊,電路幾乎不需要演化。
+          {t("COBYLA 系的 QAOA 三種深度全部命中;SPSA 三次有一次落到 0.9328。ADMM 與這裡的 Grover-GAS 配置可行率 0% —— 誠實列出,不遮醜。WarmStart 深度只有 2 是因為初態已含解資訊,電路幾乎不需要演化。")}
         </Prose>
         <Caveat>
-          固定歷史紀錄(Qiskit / Colab),與「演算法」分頁的瀏覽器即時模擬是兩套執行環境。
-          16q ising 的 GAS 表現見「40q」分頁,兩者不可混讀。
+          {t("固定歷史紀錄(Qiskit / Colab),與「演算法」分頁的瀏覽器即時模擬是兩套執行環境。16q ising 的 GAS 表現見「40q」分頁,兩者不可混讀。")}
         </Caveat>
       </Card>
     </div>
