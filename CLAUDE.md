@@ -8,7 +8,10 @@
 專案根目錄   ~/Desktop/dev/App/Fuji-App        ← 在這裡啟動 Claude
 GitHub      https://github.com/Natsusaka0505/Fuji-Showcase-Web
 上游資料源   ~/Desktop/Fujitsu_Quantum_Simulator_Challenge_2025-26
+證據包       ~/Desktop/q9_full_evidence_20260705.tar.gz(stage40 平台完整證據)
 ```
+
+證據包內容:`src/`(build_ising_40q.py、montecarlo_cvar.py 等**原始生成器**)、`outputs/stage40/risk/`(port_hazards_v2.json、route_risk.json = 發表 CVaR 表原檔)、三個 40q ising 變體、全部 slurm/logs。**它不是 Colab bundle** —— 16q 逐邊 α/β/γ 分項與 30 港網路仍在 `QLogistics_Champion_ProposalAligned.csv`(只在 Colab `/content`)。
 
 上游是比賽的原始 repo(Obsidian 筆記 + 平台程式碼 + ising 實例),**不是子模組,不會自動同步**。要重新產生資料包時 `tools/precompute.py` 會去讀它的絕對路徑,搬動任一邊都要改。
 
@@ -37,7 +40,7 @@ ising(x) = Σ score_e · x_e + A · Σ_v (flow_v(x) − rhs_v)² − offset
 
 **懲罰臨界值 A\* = 0.74**。低於它會出現「作弊態」(能量比最佳合法航線更低,但根本不是連貫航線),A=0 時有 527 個。出貨值 8.65 是 11.7 倍安全邊際。這是網站最值得示範的互動。
 
-### 模型二:蒙地卡羅(由四條航線 CVaR 表回歸還原)
+### 模型二:蒙地卡羅(由四條航線 CVaR 表回歸還原;結構已被原始碼證實)
 
 ```
 平均延誤天數 = w · Σ颱風關港天
@@ -50,6 +53,8 @@ ising(x) = Σ score_e · x_e + A · Σ_v (flow_v(x) − rhs_v)² − offset
 平均值擬合不出尾部,所以另用 2 個參數對四個 CVaR95 擬合:災害事件持續時間 ~ Gamma(shape=2)、蘇伊士延誤為定值。RMS 3.1%,精準復現 46% headline。
 
 > `suezConflictMultiplier` 預設是 **1.0 不是 1.43**。擬合出的 7.4979 天已內含紅海危機,再乘 1.43 會變 10.7 天、復現不了報告數字。滑桿上的 1.43 定位成「進一步升級情境」。
+
+證據包到手後的對帳:發表表的真正生成器是 `montecarlo_cvar.py` + `port_hazards_v2.json`(K=10,000、30 天窗、$267k/天、seed 7 全對上)。擬合常數被原始檔直接證實:7.4979→原始 7.5、0.7934→0.792、目錄年數 11.504→11.500。**結構差異保留不改**:原始碼用 Exponential 事件延誤、颱風天數直接進 Poisson、每段取兩端港延誤平均;risk.ts 是對發表數字的行為等效擬合(Gamma k=2、逐港加總),平均誤差 0.15% —— 錨定的是發表數字,不重寫。
 
 ---
 
@@ -68,6 +73,19 @@ ising(x) = Σ score_e · x_e + A · Σ_v (flow_v(x) − rhs_v)² − offset
 ### 風險排序
 
 排行分頁「風險 CVaR」模式對每條合法航線各跑一次 MC,情境數 cap 4,000 維持拖曳流暢。**營運分數與風險 USD 是兩套量綱,分開呈現、絕不合成單一指標** —— score→USD 換算沒有依據(見口徑紀律 5)。
+
+### 風險權重 λ 滑桿(score 拆解)
+
+證據包的 `build_ising_40q.py` 揭露 score 生成公式:
+
+```
+score_e = haversine(o,d)/20000 + λ·port_risk[dest]/max + |N(0,0.03)|market
+λ = risk_lambda_default = 0.4;port_risk = mean + 0.6·CVaR20(蒙地卡羅)
+```
+
+16 條邊逐一對帳通過(距離與風險項精確重算,market 殘差 ∈ [0.0015, 0.0902] 全在半正態界)。`model.ts` 的 `decomposeScores` 把 market 當殘差反推,`scoresForLambda` 重組 —— **λ=0.4 時 app 直接用 baked scores(scores=undefined),逐位一致**;重組僅到 1e-12(浮點結合律)。舊 `cost_norm_hypothesis` 已退役,AuditPanel 有交代。
+
+**口徑**:非 0.4 的 λ = 衍生能量地貌。`store.derived = derivedPair || λ≠0.4`,所有已發表數字的顯示都 gate 在 `derived` 上(不是 `derivedPair`)。
 
 ### 0.9281 聯運分頁(showcase.json)
 
@@ -96,8 +114,8 @@ npm run verify     # engine + risk + algos + typecheck
 
 **改動任何引擎後必跑,綠了才能宣稱正確。** 三個腳本檢查的東西不同:
 
-- `verify:engine` — TS 求解器 vs Python 預算結果,**137 個 penalty 掃描點逐點比對**(不是只比端點),含可行性轉折、勝出航線、作弊態計數;另掃 **72 組起終點**(可達 ⟺ 有合法航線、出貨 A 下 globalMin==bestClean)與推導 rhs 對帳
-- `verify:risk` — vs 報告發表的四條航線平均值與 CVaR95,含 46% 比值斷言;災害升級三斷言:空集合 bit-identical、只影響過港航線、closed-form 與模擬 <5% 吻合
+- `verify:engine` — TS 求解器 vs Python 預算結果,**137 個 penalty 掃描點逐點比對**(不是只比端點),含可行性轉折、勝出航線、作弊態計數;另掃 **72 組起終點**與推導 rhs 對帳;score 拆解:λ=0.4 重組 ≤1e-12、16 個 market 殘差全在 [0, 0.12]
+- `verify:risk` — vs 報告發表的四條航線平均值與 CVaR95,含 46% 比值斷言;災害升級三斷言:空集合 bit-identical、只影響過港航線、closed-form 與模擬 <5% 吻合;**vs port_hazards_v2.json 原始檔**:擬合 7.4979 vs 原始 7.5、0.7934 vs 0.792、9 港逐欄一致(原始檔 λ 隱含 11.500 年目錄,擬合 11.504)
 - `verify:showcase` — 聯運分頁手抄資料對帳:分項加總、16 組合排行 vs 官方前 12 名、Rank 1 = 0.928146(公路+鐵路)
 - `verify:algos` — 檢查**行為**而非數字:振幅峰值是否落在理論位置、過轉是否真的損失機率、GAS 是否在多數種子命中、**是否曾宣稱低於真實最優**、QAOA 收斂是否單調
 
@@ -152,8 +170,8 @@ npm run verify     # engine + risk + algos + typecheck
 | 缺的檔 | 解鎖 | 優先度 |
 |---|---|---|
 | `QLogistics_Champion_ProposalAligned.csv` | **16q 逐邊分項**(滑桿已在 0.9281 實例用筆記本輸出先做出來)+ 30 港完整網路 | 🥇 最高 |
-| 其他 ising JSON | 多走廊切換(需變數數 ≤ 22 才能即時) | 🥈 |
-| `port_hazards_v2.json` | 逐港災害細節、分災種開關 | 🥉 |
+| 其他 ising JSON | 證據包有 40q 三變體(40/rcm/sparse),**> 22 變數不能即時**,只可做靜態分析;≤22 的多走廊實例仍缺 | 🥈 |
+| ~~`port_hazards_v2.json`~~ | **已取得**(證據包),收進 q9_data、稽核分頁展示、verify:risk 對帳 | ✅ |
 | 30q `gas_result.json` | 30q 乾淨結果,補完 16/30/40q 三段對比。**從未 commit 進任何 branch** —— 在平台 `~/qarp_q9/outputs/`,拉回指令見上游 `platform_gas/README.md`(qsim → VPS → 本機) | 中 |
 | `q9_benchmark_champion.py` | 分項計算邏輯。本體只在 Colab `/content`;其用法與部分輸出已嵌在上游根目錄的 `q9_benchmark_champion_colab_ok.ipynb` | 中 |
 
@@ -209,7 +227,7 @@ tools/precompute.py       離線產生資料包(讀上游 repo)
 tools/verify_engine.ts    QUBO 對帳(137 點掃描)
 tools/verify_risk.ts      蒙地卡羅對帳(四條航線)
 tools/verify_algos.ts     Grover / QAOA / SA 行為檢查
-src/data/q9_data/         打包進建置的資料(10 個 JSON;showcase.json 手抄自 Colab 筆記本輸出)
+src/data/q9_data/         打包進建置的資料(11 個 JSON;showcase.json 手抄自 Colab 筆記本輸出,port_hazards_v2.json 來自證據包)
 src/data/index.ts         型別化存取 + 格式化函式 + CRITICAL_A
 src/engine/model.ts       QUBO 求解、航線解碼、能量直方圖
 src/engine/risk.ts        蒙地卡羅與 CVaR

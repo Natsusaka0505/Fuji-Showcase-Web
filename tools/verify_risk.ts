@@ -80,6 +80,36 @@ const c4 = Math.abs(cf - hit.meanUsd) / cf < 0.05;
 if (!c4) failures++;
 console.log(`  ${c4 ? "ok  " : "FAIL"}  closed form matches simulation under escalation   ${M(cf)} vs ${M(hit.meanUsd)}`);
 
+// The raw hazard file the published table was generated from: the fitted model's
+// recovered constants must agree with it, and the per-port figures must match
+// what ports.json shipped.
+console.log("\nfitted model vs port_hazards_v2.json (raw)");
+const hz = read("port_hazards_v2.json");
+const suezRaw = hz["Suez/Port Said"];
+const h1 = Math.abs(cvar.mc_model.suez_delay_days - suezRaw.conflict_expected_delay_days) /
+  suezRaw.conflict_expected_delay_days < 0.005;
+if (!h1) failures++;
+console.log(`  ${h1 ? "ok  " : "FAIL"}  fitted suez delay ${cvar.mc_model.suez_delay_days.toFixed(4)} vs raw ${suezRaw.conflict_expected_delay_days}`);
+
+const h2 = Math.abs(cvar.mc_model.quake_impact_days - hz["Kaohsiung"].eq_delay_mean_days) /
+  hz["Kaohsiung"].eq_delay_mean_days < 0.02;
+if (!h2) failures++;
+console.log(`  ${h2 ? "ok  " : "FAIL"}  fitted quake impact ${cvar.mc_model.quake_impact_days.toFixed(4)} vs raw ${hz["Kaohsiung"].eq_delay_mean_days}`);
+
+let portBad = 0;
+for (const p of ports as { name: string; quake_m5_300km: number; typhoon_closure_days_per_year: number; conflict_multiplier: number }[]) {
+  const raw = hz[p.name];
+  if (!raw) { portBad++; continue; }
+  if (raw.eq_events_11y !== p.quake_m5_300km) portBad++;
+  else if (Math.abs((raw.tc_closure_days_per_year ?? 0) - p.typhoon_closure_days_per_year) > 1e-9) portBad++;
+  else if (Math.abs((raw.conflict_mult ?? 1) - p.conflict_multiplier) > 1e-9) portBad++;
+  // The raw file's λ implies an 11.500-year catalog; the fit recovered 11.504.
+  else if (raw.eq_lambda > 0 && Math.abs(raw.eq_lambda - p.quake_m5_300km / cvar.mc_model.catalog_years) / raw.eq_lambda > 0.001) portBad++;
+}
+const h3 = portBad === 0;
+if (!h3) failures++;
+console.log(`  ${h3 ? "ok  " : "FAIL"}  all ${ports.length} ports match the raw file (events, closure days, conflict, λ)`);
+
 const t0 = performance.now();
 for (const r of cvar.routes) engine.simulate(r.route_iso, P);
 console.log(`\n  ${((performance.now() - t0) / 4).toFixed(1)} ms per route @ ${P.nScenarios} scenarios`);

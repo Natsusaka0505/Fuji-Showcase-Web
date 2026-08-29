@@ -1,0 +1,290 @@
+{
+  "Singapore": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=1.29&longitude=103.85&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "RSMC Tokyo Best Track",
+        "publisher": "Japan Meteorological Agency",
+        "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/Besttracks/bst_all.zip",
+        "access_date": "2026-07-04",
+        "method": "storm points within 200km, closure days by 10-min max wind (<64kt:1d, 64-95:3d, >=96:7d), 2015-2025",
+        "citation": "RSMC Tokyo - Typhoon Center Best Track Data, Japan Meteorological Agency, https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/besttrack.html (accessed 2026-07-04)"
+      },
+      "conflict": {
+        "dataset": "baseline (no active chokepoint crisis)",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 0.0,
+    "eq_delay_mean_days": 0.0,
+    "eq_events_11y": 0,
+    "tc_closure_days_per_year": 0.091,
+    "tc_storms_2015_2025": 1,
+    "conflict_mult": 1.0
+  },
+  "Hong Kong": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=22.3&longitude=114.17&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "RSMC Tokyo Best Track",
+        "publisher": "Japan Meteorological Agency",
+        "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/Besttracks/bst_all.zip",
+        "access_date": "2026-07-04",
+        "method": "storm points within 200km, closure days by 10-min max wind (<64kt:1d, 64-95:3d, >=96:7d), 2015-2025",
+        "citation": "RSMC Tokyo - Typhoon Center Best Track Data, Japan Meteorological Agency, https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/besttrack.html (accessed 2026-07-04)"
+      },
+      "conflict": {
+        "dataset": "baseline (no active chokepoint crisis)",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 0.0,
+    "eq_delay_mean_days": 0.0,
+    "eq_events_11y": 0,
+    "tc_closure_days_per_year": 3.818,
+    "tc_storms_2015_2025": 28,
+    "conflict_mult": 1.0
+  },
+  "Kaohsiung": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=22.62&longitude=120.28&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "RSMC Tokyo Best Track",
+        "publisher": "Japan Meteorological Agency",
+        "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/Besttracks/bst_all.zip",
+        "access_date": "2026-07-04",
+        "method": "storm points within 200km, closure days by 10-min max wind (<64kt:1d, 64-95:3d, >=96:7d), 2015-2025",
+        "citation": "RSMC Tokyo - Typhoon Center Best Track Data, Japan Meteorological Agency, https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/besttrack.html (accessed 2026-07-04)"
+      },
+      "conflict": {
+        "dataset": "baseline (no active chokepoint crisis)",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 21.1304,
+    "eq_delay_mean_days": 0.792,
+    "eq_events_11y": 243,
+    "tc_closure_days_per_year": 6.0,
+    "tc_storms_2015_2025": 26,
+    "conflict_mult": 1.0
+  },
+  "Shanghai": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=31.23&longitude=121.47&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "RSMC Tokyo Best Track",
+        "publisher": "Japan Meteorological Agency",
+        "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/Besttracks/bst_all.zip",
+        "access_date": "2026-07-04",
+        "method": "storm points within 200km, closure days by 10-min max wind (<64kt:1d, 64-95:3d, >=96:7d), 2015-2025",
+        "citation": "RSMC Tokyo - Typhoon Center Best Track Data, Japan Meteorological Agency, https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/besttrack.html (accessed 2026-07-04)"
+      },
+      "conflict": {
+        "dataset": "baseline (no active chokepoint crisis)",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 0.087,
+    "eq_delay_mean_days": 0.5,
+    "eq_events_11y": 1,
+    "tc_closure_days_per_year": 2.364,
+    "tc_storms_2015_2025": 16,
+    "conflict_mult": 1.0
+  },
+  "Colombo": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=6.94&longitude=79.84&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "literature-calibrated default",
+        "citation": "Verschuur et al. (2020) port disruption; IBTrACS v04 basin climatology"
+      },
+      "conflict": {
+        "dataset": "baseline (no active chokepoint crisis)",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 0.0,
+    "eq_delay_mean_days": 0.0,
+    "eq_events_11y": 0,
+    "tc_closure_days_per_year": 0.8,
+    "conflict_mult": 1.0
+  },
+  "Suez/Port Said": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=31.26&longitude=32.3&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "literature-calibrated default",
+        "citation": "Verschuur et al. (2020) port disruption; IBTrACS v04 basin climatology"
+      },
+      "conflict": {
+        "dataset": "Suez Canal Authority official statistics + IMF PortWatch",
+        "figures": "2024 transits 13,213 vs 26,434 (2023, -50%); revenue -61% to USD 3.991bn (SCA Chairman, 2025-04-17); Cape reroute +10-14 days",
+        "derivation": "conflict_mult = sqrt(26434/13213) ~= 1.41-1.43; expected delay = P(reroute ~0.6) * 12.5d ~= 7.5d",
+        "access_date": "2026-07-04",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 0.0,
+    "eq_delay_mean_days": 0.0,
+    "eq_events_11y": 0,
+    "tc_closure_days_per_year": 0.0,
+    "conflict_mult": 1.43,
+    "conflict_expected_delay_days": 7.5
+  },
+  "Piraeus": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=37.94&longitude=23.65&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "literature-calibrated default",
+        "citation": "Verschuur et al. (2020) port disruption; IBTrACS v04 basin climatology"
+      },
+      "conflict": {
+        "dataset": "baseline (no active chokepoint crisis)",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 6.8696,
+    "eq_delay_mean_days": 0.829,
+    "eq_events_11y": 79,
+    "tc_closure_days_per_year": 0.1,
+    "conflict_mult": 1.0
+  },
+  "Rotterdam": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=51.95&longitude=4.14&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "literature-calibrated default",
+        "citation": "Verschuur et al. (2020) port disruption; IBTrACS v04 basin climatology"
+      },
+      "conflict": {
+        "dataset": "baseline (no active chokepoint crisis)",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 0.0,
+    "eq_delay_mean_days": 0.0,
+    "eq_events_11y": 0,
+    "tc_closure_days_per_year": 0.2,
+    "conflict_mult": 1.0
+  },
+  "Los Angeles": {
+    "sources": {
+      "earthquake": {
+        "dataset": "USGS ANSS ComCat",
+        "publisher": "U.S. Geological Survey",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=33.73&longitude=-118.26&maxradiuskm=300.0&starttime=2015-01-01&endtime=2026-07-04&minmagnitude=5.0&limit=20000",
+        "access_date": "2026-07-04",
+        "citation": "U.S. Geological Survey, ANSS Comprehensive Earthquake Catalog (ComCat), FDSN Event Web Service, https://earthquake.usgs.gov/fdsnws/event/1/ (accessed 2026-07-04)"
+      },
+      "tropical_cyclone": {
+        "dataset": "literature-calibrated default",
+        "citation": "Verschuur et al. (2020) port disruption; IBTrACS v04 basin climatology"
+      },
+      "conflict": {
+        "dataset": "baseline (no active chokepoint crisis)",
+        "citation": "Suez Canal Authority Chairman statement, 2025-04-17: 2024 revenue USD 3.991bn (-61%), transits 13,213 vs 26,434 (2023); IMF PortWatch, portwatch.imf.org (accessed 2026-07-04)"
+      }
+    },
+    "eq_lambda": 1.0435,
+    "eq_delay_mean_days": 1.833,
+    "eq_events_11y": 12,
+    "tc_closure_days_per_year": 0.3,
+    "conflict_mult": 1.0
+  },
+  "_hormuz_scenario": {
+    "scenario_name": "Strait of Hormuz disruption (US-Iran conflict, real-event calibrated)",
+    "baseline": {
+      "oil_flow_mbpd": 20.0,
+      "vessels_per_day": 94,
+      "share_global_petroleum_pct": "20-30",
+      "source": "U.S. EIA World Oil Transit Chokepoints; IMF PortWatch (portwatch.imf.org), accessed 2026-07-04"
+    },
+    "event_1_threat_2025_06": {
+      "description": "12-day war, June 2025 (US strikes on Iranian nuclear facilities). Strait remained OPEN.",
+      "war_risk_premium_pct_hull": "0.2-0.3 -> 0.5",
+      "traffic_impact": "brief dips, no closure",
+      "source": "Reuters / Lloyd's List coverage, June 2025"
+    },
+    "event_2_blockade_2026_02": {
+      "description": "De facto blockade Feb-Mar 2026: transit collapse ~90%, war-risk premium up to 10% hull value.",
+      "traffic_reduction_pct": 90,
+      "war_risk_premium_pct_hull": "up to 10",
+      "reroute_cape_extra_days": 12,
+      "source": "IMF PortWatch chokepoint data; Lloyd's List / Reuters, Feb-Mar 2026"
+    },
+    "per_vessel_economics": {
+      "ULCV_20000TEU": {
+        "dwt": "~200,000+",
+        "cargo_value_usd": "0.5-1.0 billion",
+        "delay_cost_usd_per_day": 267000,
+        "breakdown": "charter/opex ~150k + cargo inventory holding ~110k",
+        "source": "Drewry/Alphaliner cost benchmarks; cargo-value estimates, 2024-2026"
+      },
+      "VLCC": {
+        "dwt": 300000,
+        "cargo": "2 million barrels crude",
+        "tce_usd_per_day": "30,000-100,000+ (crisis spikes)",
+        "source": "Baltic Exchange BDTI / Clarksons, 2024-2026"
+      },
+      "LNG_174km3": {
+        "capacity_m3": 174000,
+        "spot_rate_usd_per_day": "30,000-200,000",
+        "source": "Clarksons / Spark Commodities, 2024-2026"
+      }
+    },
+    "model_application": {
+      "note": "None of the 9 modeled ports lies inside the Persian Gulf; Hormuz is applied as a global fuel/war-risk multiplier + standalone scenario, NOT per-port delay. Suez/Red Sea crisis (SCA -50% transits) remains the per-port conflict driver for Suez/Port Said.",
+      "fuel_war_risk_multiplier_threat": 1.05,
+      "fuel_war_risk_multiplier_blockade": 1.2
+    },
+    "access_date": "2026-07-04"
+  }
+}

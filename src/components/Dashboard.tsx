@@ -43,7 +43,7 @@ export function Dashboard() {
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("map");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { solution, isDefault, reset, derivedPair } = useStore();
+  const { solution, isDefault, reset, derived } = useStore();
   const Panel = TABS.find((t) => t.key === tab)!.Panel;
   const cheating = solution.cheatStates > 0;
 
@@ -57,7 +57,7 @@ function Shell() {
               風險感知全球供應鏈路徑優化｜Fujitsu Quantum Simulator Challenge 2025-26
             </p>
           </div>
-          {derivedPair && <Chip label="衍生情境" tone="warn" filled />}
+          {derived && <Chip label="衍生情境" tone="warn" filled />}
           {cheating && <Chip label="約束失效" tone="bad" filled />}
           {!isDefault && (
             <button type="button" onClick={reset}
@@ -98,7 +98,7 @@ function Shell() {
 
 /** The parameters every panel reacts to. */
 function ParamColumn() {
-  const { params, setParams, setRisk, solution, derivedPair } = useStore();
+  const { params, setParams, setRisk, solution, derived } = useStore();
   const cheating = solution.cheatStates > 0;
 
   return (
@@ -114,14 +114,28 @@ function ParamColumn() {
         onChange={(v) => setParams((p) => ({ ...p, penaltyA: v }))}
         hint={
           cheating
-            ? derivedPair
+            ? derived
               ? `有 ${solution.cheatStates} 個作弊態勝過最佳合法航線`
               : `低於臨界 ${CRITICAL_A}:有 ${solution.cheatStates} 個作弊態勝過最佳合法航線`
-            : derivedPair
-              ? "流量守恆約束強度｜臨界 A* 與出貨值僅對 SIN→LAX 校準"
+            : derived
+              ? "流量守恆約束強度｜臨界 A* 與出貨值僅對出貨實例校準"
               : `流量守恆約束強度｜臨界 ${CRITICAL_A}、出貨值 ${meta.penalty_A_default.toFixed(2)}`
         }
         tone={cheating ? "bad" : "gold"}
+      />
+      <Slider
+        label="風險權重 λ"
+        value={params.riskLambda}
+        min={0}
+        max={1}
+        step={0.01}
+        onChange={(v) => setParams((p) => ({ ...p, riskLambda: v }))}
+        tone="quantum"
+        hint={
+          params.riskLambda === meta.risk_lambda_default
+            ? "score = 距離 + λ·目的港風險 + 市場項｜出貨值 0.40,公式與上游 build_ising_40q.py 逐邊對帳"
+            : "非出貨 λ = 衍生能量地貌;−97.4936 等已發表數字不適用"
+        }
       />
       <Slider
         label="每日延誤成本"

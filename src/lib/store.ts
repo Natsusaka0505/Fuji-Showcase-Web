@@ -9,13 +9,16 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState } from "react";
-import { Q9Model, type SolveResult } from "@/engine/model";
+import { Q9Model, decomposeScores, scoresForLambda, type SolveResult } from "@/engine/model";
 import { RiskEngine, DEFAULT_RISK_PARAMS, type RiskParams, type RiskResult } from "@/engine/risk";
 import { meta, edgeData, ports, cvar } from "@/data";
 
 /** Built once per browser session; construction sweeps the state space (~20 ms). */
 export const defaultModel = new Q9Model(meta, edgeData);
 export const riskEngine = new RiskEngine(ports, cvar.mc_model);
+
+/** score = dist + λ·risk_dest + market, per the upstream generator; λ ships at 0.4. */
+export const scoreDecomposition = decomposeScores(edgeData.edges, ports, meta.risk_lambda_default);
 
 /** One model per endpoint pair, built lazily (~20 ms each) and kept for the session. */
 const modelCache = new Map<string, Q9Model>([
@@ -34,6 +37,8 @@ export function getModel(source: string, target: string): Q9Model {
 export interface Params {
   penaltyA: number;
   blockedPorts: string[];
+  /** Risk weight λ in the edge scores. The competition instance ships at 0.4. */
+  riskLambda: number;
   /** Endpoint pair. Anything but the default SIN→LAX is a browser-derived instance. */
   source: string;
   target: string;
@@ -43,6 +48,7 @@ export interface Params {
 export const DEFAULT_PARAMS: Params = {
   penaltyA: meta.penalty_A_default,
   blockedPorts: [],
+  riskLambda: meta.risk_lambda_default,
   source: meta.source_port,
   target: meta.target_port,
   risk: {
@@ -70,6 +76,10 @@ export interface Store {
    * pairs must be flagged wherever those are shown.
    */
   derivedPair: boolean;
+  /** Derived instance overall: non-default pair OR non-default λ. Gates published-number displays. */
+  derived: boolean;
+  /** Edge scores at the current λ; undefined at the shipped λ (use the baked scores). */
+  scores: Float64Array | undefined;
   solution: SolveResult;
   /** Risk of the currently optimal route, under the live parameters. */
   routeRisk: RiskResult | null;
@@ -91,9 +101,18 @@ export function useStoreValue(): Store {
   const model = getModel(params.source, params.target);
   const derivedPair = params.source !== DEFAULT_PARAMS.source || params.target !== DEFAULT_PARAMS.target;
 
+  const scores = useMemo(
+    () =>
+      params.riskLambda === DEFAULT_PARAMS.riskLambda
+        ? undefined
+        : scoresForLambda(scoreDecomposition, params.riskLambda),
+    [params.riskLambda],
+  );
+  const derived = derivedPair || scores !== undefined;
+
   const solution = useMemo(
-    () => model.solve({ penaltyA: params.penaltyA, blockedPorts: params.blockedPorts }),
-    [model, params.penaltyA, params.blockedPorts],
+    () => model.solve({ penaltyA: params.penaltyA, blockedPorts: params.blockedPorts, scores }),
+    [model, params.penaltyA, params.blockedPorts, scores],
   );
 
   const routeRisk = useMemo(() => {
@@ -108,6 +127,7 @@ export function useStoreValue(): Store {
 
   const isDefault = useMemo(() => {
     if (params.penaltyA !== DEFAULT_PARAMS.penaltyA) return false;
+    if (params.riskLambda !== DEFAULT_PARAMS.riskLambda) return false;
     if (params.blockedPorts.length > 0) return false;
     if (params.source !== DEFAULT_PARAMS.source || params.target !== DEFAULT_PARAMS.target) return false;
     return (Object.keys(params.risk) as (keyof RiskParams)[]).every((k) => {
@@ -139,6 +159,8 @@ export function useStoreValue(): Store {
     isDefault,
     model,
     derivedPair,
+    derived,
+    scores,
     solution,
     routeRisk,
     benchmarkRisks,

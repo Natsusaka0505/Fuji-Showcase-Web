@@ -8,8 +8,11 @@ import type { RiskResult } from "@/engine/risk";
 import { algoCompare, solutions, meta, fmtCost, fmtUsd } from "@/data";
 
 export function RankingPanel() {
-  const { params, solution, model, derivedPair } = useStore();
-  const hist = useMemo(() => model.histogram({ penaltyA: params.penaltyA }), [model, params.penaltyA]);
+  const { params, solution, model, derivedPair, derived, scores } = useStore();
+  const hist = useMemo(
+    () => model.histogram({ penaltyA: params.penaltyA, scores }),
+    [model, params.penaltyA, scores],
+  );
   const best = solution.bestClean;
   const [rankBy, setRankBy] = useState<"score" | "risk">("score");
 
@@ -152,7 +155,7 @@ export function RankingPanel() {
           近似比 = 最佳可行成本 ÷ 暴力解最佳可行成本,且只對可行解有意義。GAS 該列為煙霧版
           (feasible=False),硬算近似比不合法,故列「—」。此表為固定歷史紀錄,不隨參數變動。
         </Caveat>
-        {derivedPair && <Caveat>上表屬 SIN→LAX 比賽實例,不隨起終點切換。</Caveat>}
+        {derived && <Caveat>上表屬出貨比賽實例(SIN→LAX、λ=0.4),不隨起終點或 λ 切換。</Caveat>}
       </Card>
     </div>
   );

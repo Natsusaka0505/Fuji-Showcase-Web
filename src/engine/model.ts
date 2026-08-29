@@ -291,3 +291,59 @@ export function reachableTargets(data: EdgeData, source: string): string[] {
   seen.delete(source); // a round trip is not a corridor
   return data.incidence_ports.filter((p) => seen.has(p));
 }
+
+/** The subset of port data the score decomposition needs. */
+export interface PortGeo {
+  name: string;
+  lat: number;
+  lon: number;
+  port_risk: number;
+}
+
+export interface ScoreDecomposition {
+  /** Haversine distance / 20000 km — recomputed exactly from port coordinates. */
+  dist: Float64Array;
+  /** port_risk[destination] / max(port_risk) — from the baked risk figures. */
+  risk: Float64Array;
+  /** |N(0,0.03)| market noise, recovered as the residual at the shipped λ. */
+  market: Float64Array;
+}
+
+/**
+ * Split each edge score into the three terms of the upstream generator
+ * (`build_ising_40q.py`): score = dist/20000 + λ·risk_dest/max + market.
+ * The first two are recomputed exactly; the seeded market draw is recovered as
+ * the residual, so recomposing at the shipped λ reproduces the baked scores to
+ * machine precision. verify_engine bounds every residual by the half-normal tail.
+ */
+export function decomposeScores(
+  edges: readonly Edge[],
+  ports: readonly PortGeo[],
+  lambdaDefault: number,
+): ScoreDecomposition {
+  const byName = new Map(ports.map((p) => [p.name, p]));
+  const rmax = Math.max(...ports.map((p) => p.port_risk));
+  const dist = new Float64Array(edges.length);
+  const risk = new Float64Array(edges.length);
+  const market = new Float64Array(edges.length);
+  for (const e of edges) {
+    const a = byName.get(e.origin)!;
+    const b = byName.get(e.destination)!;
+    const dphi = ((b.lat - a.lat) * Math.PI) / 180;
+    const dl = ((b.lon - a.lon) * Math.PI) / 180;
+    const h =
+      Math.sin(dphi / 2) ** 2 +
+      Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dl / 2) ** 2;
+    dist[e.index] = (2 * 6371.0 * Math.asin(Math.sqrt(h))) / 20000.0;
+    risk[e.index] = b.port_risk / rmax;
+    market[e.index] = e.score - dist[e.index] - lambdaDefault * risk[e.index];
+  }
+  return { dist, risk, market };
+}
+
+/** Edge scores under a different risk weight λ; identical to the baked scores at the shipped λ. */
+export function scoresForLambda(dec: ScoreDecomposition, lambda: number): Float64Array {
+  const out = new Float64Array(dec.dist.length);
+  for (let i = 0; i < out.length; i++) out[i] = dec.dist[i] + dec.market[i] + lambda * dec.risk[i];
+  return out;
+}

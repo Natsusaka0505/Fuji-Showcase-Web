@@ -18,10 +18,10 @@ import { runGas, amplificationCurve, DEFAULT_GAS_PARAMS } from "@/engine/grover"
 import { meta, result40, fmtHours } from "@/data";
 
 export function AlgoPanel() {
-  const { params, model } = useStore();
+  const { params, model, scores } = useStore();
   const energies = useMemo(
-    () => model.energies({ penaltyA: params.penaltyA }),
-    [model, params.penaltyA],
+    () => model.energies({ penaltyA: params.penaltyA, scores }),
+    [model, params.penaltyA, scores],
   );
   // True minimum of the live instance. For a derived endpoint pair (or a lowered
   // penalty) the published −97.4936 is the wrong anchor, so anchor on the actual

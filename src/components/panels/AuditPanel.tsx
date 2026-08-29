@@ -7,7 +7,7 @@
 "use client";
 
 import { Card, Chip, Caveat, Prose, Mono } from "@/components/ui";
-import { ports, audit, meta, edgeData } from "@/data";
+import { ports, audit, meta, cvar, hazardsV2, hazardPorts } from "@/data";
 
 export function AuditPanel() {
   return (
@@ -98,12 +98,76 @@ export function AuditPanel() {
         <Caveat>{meta.caveat}</Caveat>
       </Card>
 
-      <Card title="尚未驗證的推測" subtitle="誠實標註" className="xl:col-span-2">
-        <p className="text-xs leading-relaxed text-ink-dim">{edgeData.hypothesis_note}</p>
+      <Card
+        title="災害參數原始檔(port_hazards_v2)"
+        subtitle="發表 CVaR 表的實際輸入,來自平台證據包"
+        right={<Chip label="原始資料" tone="good" filled />}
+        className="xl:col-span-2"
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[520px] text-left">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-wide text-ink-faint">
+                <th className="pb-1 font-normal">港</th>
+                <th className="pb-1 text-right font-normal">地震 λ/年</th>
+                <th className="pb-1 text-right font-normal">事件延誤(天)</th>
+                <th className="pb-1 text-right font-normal">颱風關港(天/年)</th>
+                <th className="pb-1 text-right font-normal">衝突係數</th>
+              </tr>
+            </thead>
+            <tbody>
+              {hazardPorts.map((name) => {
+                const h = hazardsV2[name];
+                return (
+                  <tr key={name} className="border-t border-border">
+                    <td className="py-1.5 text-xs text-ink">{name}</td>
+                    <td className="py-1.5 text-right font-mono text-xs tabular-nums text-ink-dim">
+                      {(h.eq_lambda ?? 0).toFixed(2)}
+                    </td>
+                    <td className="py-1.5 text-right font-mono text-xs tabular-nums text-ink-dim">
+                      {(h.eq_delay_mean_days ?? 0).toFixed(3)}
+                    </td>
+                    <td className="py-1.5 text-right font-mono text-xs tabular-nums text-ink-dim">
+                      {(h.tc_closure_days_per_year ?? 0).toFixed(2)}
+                    </td>
+                    <td className={`py-1.5 text-right font-mono text-xs tabular-nums ${(h.conflict_mult ?? 1) > 1 ? "font-bold text-warn" : "text-ink-dim"}`}>
+                      {(h.conflict_mult ?? 1).toFixed(2)}
+                      {h.conflict_expected_delay_days != null && (
+                        <span className="ml-1 text-[10px] text-warn">+{h.conflict_expected_delay_days} 天</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <Prose>
+          擬合模型與原始檔的對照:蘇伊士延誤擬合 <Mono>{cvar.mc_model.suez_delay_days.toFixed(4)}</Mono> 天,
+          原始檔寫 <Mono>7.5</Mono>;地震事件延誤擬合 <Mono>{cvar.mc_model.quake_impact_days.toFixed(4)}</Mono> 天,
+          原始檔寫 <Mono>0.792</Mono>。逆向還原的結構被原始資料直接證實 —— 這兩個數字先前只能靠
+          「筆記中獨立寫下的 7.5 天」旁證。
+        </Prose>
         <Caveat>
-          α/β/γ 權重滑桿(cost / time / geo / port / weather 分項)需要
-          QLogistics_Champion_ProposalAligned.csv 才能做成真的。該檔不在 repo 內,
-          目前只提供有真實資料支撐的參數。
+          方法(JMA):200 km 內風暴點,10 分鐘最大風速 &lt;64kt 記 1 天、64–95kt 記 3 天、≥96kt 記 7 天,
+          統計 2015–2025。引用:USGS ANSS ComCat、RSMC Tokyo Best Track(JMA)、Suez baseline。
+          原始生成器為 montecarlo_cvar.py(K=10,000、30 天窗、$267k/天、seed 7);本站 risk.ts
+          為對發表數字的行為等效擬合,分布形狀不同(Gamma vs Exponential),平均誤差 0.15%。
+        </Caveat>
+      </Card>
+
+      <Card title="score 拆解:已由原始碼驗證" subtitle="取代先前的 cost_norm 假設" className="xl:col-span-2">
+        <Prose>
+          平台證據包內的 <Mono>build_ising_40q.py</Mono> 揭露了邊分數的生成公式:
+          <Mono>score = haversine/20000 + λ·port_risk_dest/max + |N(0,0.03)|</Mono>(λ = 0.4)。
+          16 條邊逐一對帳:距離與風險項精確重算,市場擾動殘差全部落在半正態界內(16/16)。
+          側欄的「風險權重 λ」滑桿即基於此拆解 —— λ = 0.40 時與比賽實例逐位一致。
+          舊的 <Mono>cost_norm_hypothesis</Mono>(相關係數 0.52 的反推假設)已退役。
+        </Prose>
+        <Caveat>
+          仍未驗證:α/β/γ₁γ₂γ₃ 五分項(cost/time/geo/port/weather)在 16q 實例的逐邊數值,
+          需要 QLogistics_Champion_ProposalAligned.csv;「聯運」分頁的分項滑桿基於 0.9281
+          showcase 實例的筆記本輸出。
         </Caveat>
       </Card>
     </div>

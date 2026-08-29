@@ -17,6 +17,7 @@ import algoJson from "./q9_data/algo_compare.json";
 import auditJson from "./q9_data/audit.json";
 import result40Json from "./q9_data/result_40q.json";
 import showcaseJson from "./q9_data/showcase.json";
+import hazardsV2Json from "./q9_data/port_hazards_v2.json";
 
 export const meta = metaJson as Meta & {
   problem_name: string;
@@ -115,6 +116,32 @@ export const showcase = showcaseJson as {
     depth: number | null; two_qubit_gates: number | null;
   }[];
 };
+
+export interface HazardSource {
+  dataset?: string;
+  publisher?: string;
+  url?: string;
+  method?: string;
+  citation?: string;
+  access_date?: string;
+}
+
+/** The raw hazard parameter file the published CVaR table was generated from. */
+export const hazardsV2 = hazardsV2Json as unknown as {
+  [port: string]: {
+    eq_lambda?: number;
+    eq_delay_mean_days?: number;
+    eq_events_11y?: number;
+    tc_closure_days_per_year?: number;
+    tc_storms_2015_2025?: number;
+    conflict_mult?: number;
+    conflict_expected_delay_days?: number;
+    sources?: { [hazard: string]: HazardSource };
+    scenario_name?: string;
+  };
+};
+
+export const hazardPorts = Object.keys(hazardsV2).filter((k) => !k.startsWith("_"));
 
 /** Feasibility collapses below this penalty weight; used across several views. */
 export const CRITICAL_A =

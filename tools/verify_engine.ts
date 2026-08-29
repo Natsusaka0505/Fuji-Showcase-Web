@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Q9Model, reachableTargets } from "../src/engine/model.ts";
+import { Q9Model, reachableTargets, decomposeScores, scoresForLambda } from "../src/engine/model.ts";
 
 const DATA = join(dirname(fileURLToPath(import.meta.url)), "../src/data/q9_data");
 const read = (f: string) => JSON.parse(readFileSync(join(DATA, f), "utf8"));
@@ -108,6 +108,30 @@ for (const src of edgeData.incidence_ports as string[]) {
 }
 check(`all ${pairChecked} endpoint pairs consistent with reachability`, pairBad === 0,
   `${(performance.now() - tPairs).toFixed(0)} ms`);
+
+// Score decomposition: recomposing at the shipped λ must be bit-identical, and
+// every recovered market residual must be a plausible |N(0, 0.03)| draw.
+const portsJson = read("ports.json");
+const dec = decomposeScores(edgeData.edges, portsJson, meta.risk_lambda_default);
+const recomposed = scoresForLambda(dec, meta.risk_lambda_default);
+// The app uses the baked scores verbatim at the shipped λ (scores=undefined),
+// so recomposition only needs to agree to rounding, not bit-for-bit.
+let recWorst = 0;
+for (const e of edgeData.edges as { index: number; score: number }[]) {
+  recWorst = Math.max(recWorst, Math.abs(recomposed[e.index] - e.score));
+}
+check("λ=0.4 recomposition reproduces baked scores", recWorst <= 1e-12,
+  `worst diff = ${recWorst.toExponential(1)}`);
+let resBad = 0;
+for (let i = 0; i < dec.market.length; i++) {
+  if (dec.market[i] < 0 || dec.market[i] > 0.12) resBad++;
+}
+check("all 16 market residuals within the half-normal bound [0, 0.12]", resBad === 0);
+for (const lam of [0, 1]) {
+  const s = model.solve({ penaltyA: A, scores: scoresForLambda(dec, lam) });
+  check(`λ=${lam} solve yields a clean complete route`,
+    s.bestClean !== null && s.bestClean.complete && s.bestClean.feasible);
+}
 
 const t1 = performance.now();
 const N = 30;
