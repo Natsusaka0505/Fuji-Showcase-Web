@@ -454,4 +454,8 @@ export const EN: Record<string, string> = {
   "本分頁為平台實測結果瀏覽器:QUBO 輸入(邊分數)留在平台上,瀏覽器不做重算。與「地圖/排行/演算法」分頁的 16q 即時引擎是兩套體系。":
     "This tab is a browser for measured platform results: the QUBO inputs (edge scores) stayed on the cluster, so nothing recomputes here. A separate system from the live 16q engine behind the Map/Ranking/Algorithms tabs.",
   "30港": "30 Ports",
+
+  // Site-wide footer disclaimer
+  "本站所有量子結果均為富士通 1024×FX700 無雜訊古典態向量模擬,非量子實機,不宣稱量子優勢。":
+    "All quantum results on this site are noise-free classical statevector simulations on Fujitsu's 1024× FX700 cluster — not quantum hardware; no quantum-advantage claim.",
 };

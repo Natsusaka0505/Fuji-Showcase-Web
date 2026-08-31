@@ -22,16 +22,18 @@ const check = (name: string, ok: boolean, detail = "") => {
 
 const ports = new Set(Object.keys(v2.ports));
 check("30 ports", ports.size === 30);
-check("105 instances", v2.instances.length === 105);
 
+// The corridor count grows as more scans land; the invariant is the complete
+// 7-hazard-set grid per corridor, not a fixed corridor count.
 const grid = new Map<string, Set<string>>();
 for (const i of v2.instances) {
   const pair = `${i.source}->${i.target}`;
   if (!grid.has(pair)) grid.set(pair, new Set());
   grid.get(pair)!.add([...i.hazards].sort().join("+"));
 }
-check("15 corridors × 7 hazard sets, no gaps",
-  grid.size === 15 && [...grid.values()].every((s) => s.size === 7));
+check(`every corridor carries all 7 hazard sets (${grid.size} corridors)`,
+  [...grid.values()].every((s) => s.size === 7));
+check("instance count = corridors × 7", v2.instances.length === grid.size * 7);
 
 const routeOk = (r: string[] | null, src: string, tgt: string) =>
   r === null || (r.length >= 2 && r[0] === src && r[r.length - 1] === tgt && r.every((p) => ports.has(p)));

@@ -108,6 +108,11 @@ function Shell() {
           <Panel />
         </main>
       </div>
+      <footer className="border-t border-border px-4 py-3">
+        <p className="text-center text-[10px] leading-relaxed text-ink-faint">
+          {t("本站所有量子結果均為富士通 1024×FX700 無雜訊古典態向量模擬,非量子實機,不宣稱量子優勢。")}
+        </p>
+      </footer>
     </div>
   );
 }
