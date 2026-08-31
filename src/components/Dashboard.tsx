@@ -21,7 +21,7 @@ import { QuantumPanel } from "@/components/panels/QuantumPanel";
 import { AuditPanel } from "@/components/panels/AuditPanel";
 import { ShowcasePanel } from "@/components/panels/ShowcasePanel";
 import { V2Panel } from "@/components/panels/V2Panel";
-import { meta, edgeData, ports, CRITICAL_A, fmtUsd, report40 } from "@/data";
+import { meta, edgeData, ports, CRITICAL_A, fmtUsd, report40, v2Corridors } from "@/data";
 
 const TABS = [
   { key: "map", label: "地圖", Panel: MapPanel },
@@ -48,7 +48,7 @@ export function Dashboard() {
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("map");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { solution, isDefault, reset, derived } = useStore();
+  const { solution, isDefault, reset, derived, dev, setDev, advancedDeviates, resetAdvanced } = useStore();
   const { locale, setLocale, t } = useI18n();
   const Panel = TABS.find((t) => t.key === tab)!.Panel;
   const cheating = solution.cheatStates > 0;
@@ -81,12 +81,32 @@ function Shell() {
               </button>
             ))}
           </div>
+          <button type="button" onClick={() => setDev(!dev)} aria-pressed={dev}
+            title={t("展開會改變實例的旋鈕;預設關閉")}
+            className={`shrink-0 rounded-full border px-3 py-1 text-xs transition-colors ${
+              dev ? "border-warn bg-warn font-bold text-bg" : "border-border text-ink-dim hover:text-ink"
+            }`}>
+            {t("進階")}
+          </button>
           <button type="button" onClick={() => setDrawerOpen((o) => !o)}
             aria-expanded={drawerOpen}
             className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-ink-dim transition-colors hover:text-ink lg:hidden">
             {t("參數")} {drawerOpen ? "▲" : "▼"}
           </button>
         </div>
+        {advancedDeviates && (
+          // A screenshot of a derived landscape must not travel as the published one.
+          <div className="mx-3 mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-warn bg-warn/10 px-3 py-1.5">
+            <span className="text-xs font-bold text-warn">{t("已偏離比賽實例")}</span>
+            <span className="min-w-0 flex-1 text-[10px] text-ink-dim">
+              {t("進階旋鈕已被調整,畫面上的 9 港數字不再對應報告與證據。30 港平台結果不受影響。")}
+            </span>
+            <button type="button" onClick={resetAdvanced}
+              className="shrink-0 rounded-full border border-warn px-2.5 py-0.5 text-[10px] font-bold text-warn transition-colors hover:bg-warn hover:text-bg">
+              {t("一鍵還原")}
+            </button>
+          </div>
+        )}
         <nav className="flex gap-1 overflow-x-auto px-3 pb-2" aria-label={t("分頁")}>
           {TABS.map(({ key, label }) => (
             <button key={key} type="button" onClick={() => setTab(key)}
@@ -134,16 +154,112 @@ function Shell() {
 
 /** The parameters every panel reacts to. */
 function ParamColumn() {
-  const { params, setParams, setRisk, solution, derived } = useStore();
   const { t } = useI18n();
-  const cheating = solution.cheatStates > 0;
+  const { params, setParams, setV2Corridor, toggleV2Hazard, dev } = useStore();
 
   return (
     <div>
-      <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t("共用參數")}</h2>
-      <PairPicker />
+      <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t("情境")}</h2>
+
+      <label className="mb-2 block">
+        <span className="mb-1 block text-xs text-ink">{t("起點")}</span>
+        <select
+          value={`${params.v2Source}\u2192${params.v2Target}`}
+          onChange={(e) => {
+            const [src, tgt] = e.target.value.split("\u2192");
+            setV2Corridor(src, tgt);
+          }}
+          className="w-full rounded-lg border border-border bg-surface-alt px-2 py-1.5 text-xs text-ink"
+        >
+          {v2Corridors.map((c) => (
+            <option key={`${c.source}\u2192${c.target}`} value={`${c.source}\u2192${c.target}`}>
+              {c.source} → {c.target}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="mb-4 text-[10px] leading-snug text-ink-faint">
+        {t("起訖與風險套用於「30 港」分頁;其餘分頁為固定實例。")}
+      </p>
+
+      <div className="mb-4">
+        <span className="mb-1.5 block text-xs text-ink">{t("風險項")}</span>
+        <div className="flex flex-wrap gap-1.5">
+          {SIDEBAR_HAZARDS.map(({ key, label, tone }) => {
+            const on = params.v2Hazards.includes(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => toggleV2Hazard(key)}
+                aria-pressed={on}
+                className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-colors ${
+                  on ? tone : "border-border text-ink-dim hover:text-ink"
+                }`}
+              >
+                {t(label)}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-1 text-[10px] text-ink-faint">{t("至少保留一項")}</p>
+      </div>
+
+      <div className="mb-4 border-t border-border pt-3">
+        <span className="mb-1.5 block text-xs text-ink">{t("港口封鎖")}</span>
+        {params.blockedPorts.length === 0 ? (
+          <p className="text-[10px] leading-snug text-ink-faint">{t("點地圖或港口列表上的港口即可封鎖")}</p>
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {params.blockedPorts.map((iso) => (
+              <button key={iso} type="button"
+                onClick={() => setParams((p) => ({ ...p, blockedPorts: p.blockedPorts.filter((x) => x !== iso) }))}
+                className="rounded-full border border-bad px-2 py-0.5 font-mono text-[10px] font-bold text-bad transition-colors hover:bg-bad hover:text-bg">
+                {iso} ✕
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {dev && <AdvancedColumn />}
+    </div>
+  );
+}
+
+const SIDEBAR_HAZARDS = [
+  { key: "earthquake", label: "地震", tone: "border-quantum bg-quantum text-bg" },
+  { key: "typhoon", label: "颱風", tone: "border-warn bg-warn text-bg" },
+  { key: "war", label: "戰爭", tone: "border-bad bg-bad text-bg" },
+] as const;
+
+/**
+ * Everything that can move the app off the competition instance. Hidden until
+ * asked for, because a visitor who drags these gets a screen that disagrees
+ * with the report and looks like a bug rather than an experiment.
+ */
+function AdvancedColumn() {
+  const { t } = useI18n();
+  const { params, setParams, setRisk, solution, derived, advancedDeviates, resetAdvanced } = useStore();
+  const cheating = solution.cheatStates > 0;
+
+  return (
+    <div className="border-t border-warn/40 pt-3">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-xs font-bold uppercase tracking-wide text-warn">{t("進階")}</h2>
+        {advancedDeviates && (
+          <button type="button" onClick={resetAdvanced}
+            className="rounded-full border border-warn px-2 py-0.5 text-[10px] font-bold text-warn transition-colors hover:bg-warn hover:text-bg">
+            {t("還原比賽值")}
+          </button>
+        )}
+      </div>
+      <p className="mb-3 text-[10px] leading-snug text-ink-faint">
+        {t("這些旋鈕會產生衍生實例。30 港分頁的 33 qubit 結果是平台預先算好的,不受影響。")}
+      </p>
+
       <Slider
-        label="penalty_A"
+        label={t("penalty_A")}
         value={params.penaltyA}
         min={0}
         max={20}
@@ -184,30 +300,8 @@ function ParamColumn() {
         format={fmtUsd}
         tone="quantum"
       />
-      <Toggle
-        label={t("荷莫茲海峽封鎖")}
-        value={params.risk.hormuzBlockade}
-        onChange={(v) => setRisk({ hormuzBlockade: v })}
-        hint={t("繞好望角 +12 天(estimate)")}
-      />
-      {params.blockedPorts.length > 0 && (
-        <div className="mt-4 border-t border-border pt-3">
-          <div className="mb-2 text-[10px] uppercase tracking-wide text-ink-faint">
-            {t("已封鎖 {n} 港", { n: params.blockedPorts.length })}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {params.blockedPorts.map((iso) => (
-              <button key={iso} type="button"
-                onClick={() => setParams((p) => ({ ...p, blockedPorts: p.blockedPorts.filter((x) => x !== iso) }))}
-                className="rounded-full border border-bad px-2 py-0.5 font-mono text-[10px] font-bold text-bad transition-colors hover:bg-bad hover:text-bg">
-                {iso} ✕
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      <p className="mt-4 border-t border-border pt-3 text-[10px] leading-relaxed text-ink-faint">
-        {t("全部運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)並重跑 10,000 次蒙地卡羅情境(~2 ms)。")}
+      <p className="mt-2 border-t border-border pt-3 text-[10px] leading-relaxed text-ink-faint">
+        {t("9 港實例的運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)。")}
       </p>
     </div>
   );

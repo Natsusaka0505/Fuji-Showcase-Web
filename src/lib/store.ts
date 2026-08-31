@@ -8,7 +8,7 @@
  */
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { Q9Model, decomposeScores, scoresForLambda, type SolveResult } from "@/engine/model";
 import { RiskEngine, DEFAULT_RISK_PARAMS, type RiskParams, type RiskResult } from "@/engine/risk";
 import { meta, edgeData, ports, cvar } from "@/data";
@@ -35,6 +35,11 @@ export function getModel(source: string, target: string): Q9Model {
 }
 
 export interface Params {
+  /** Corridor for the 30-port platform campaign. Picks a precomputed instance. */
+  v2Source: string;
+  v2Target: string;
+  /** Hazard set for that instance; the grid has no hazard-free entry, so never empty. */
+  v2Hazards: string[];
   penaltyA: number;
   blockedPorts: string[];
   /** Risk weight λ in the edge scores. The competition instance ships at 0.4. */
@@ -46,6 +51,9 @@ export interface Params {
 }
 
 export const DEFAULT_PARAMS: Params = {
+  v2Source: "Busan",
+  v2Target: "Hamburg",
+  v2Hazards: ["war"],
   penaltyA: meta.penalty_A_default,
   blockedPorts: [],
   riskLambda: meta.risk_lambda_default,
@@ -59,8 +67,30 @@ export const DEFAULT_PARAMS: Params = {
   },
 };
 
+/**
+ * Advanced knobs are everything that can move the app off the competition
+ * instance. They stay hidden until the user asks for them, and once moved the
+ * header says so — a screenshot of a derived landscape must not circulate as
+ * if it were the published result.
+ */
+export const CONTEST_VALUES = {
+  penaltyA: meta.penalty_A_default,
+  riskLambda: meta.risk_lambda_default,
+  source: meta.source_port,
+  target: meta.target_port,
+} as const;
+
 export interface Store {
   params: Params;
+  /** Advanced/developer mode. Off unless asked for, or ?dev=1 in the URL. */
+  dev: boolean;
+  setDev: (v: boolean) => void;
+  /** True when an advanced knob no longer matches the competition instance. */
+  advancedDeviates: boolean;
+  /** Restore only the advanced knobs, leaving corridor and blocking alone. */
+  resetAdvanced: () => void;
+  setV2Corridor: (source: string, target: string) => void;
+  toggleV2Hazard: (h: string) => void;
   setParams: (fn: (p: Params) => Params) => void;
   setRisk: (patch: Partial<RiskParams>) => void;
   togglePort: (iso: string) => void;
@@ -125,6 +155,18 @@ export function useStoreValue(): Store {
     [params.risk],
   );
 
+  const [dev, setDev] = useState(false);
+  // ?dev=1 opens the panel without a click, for anyone linking straight to it.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("dev") === "1") setDev(true);
+  }, []);
+
+  const advancedDeviates =
+    params.penaltyA !== CONTEST_VALUES.penaltyA ||
+    params.riskLambda !== CONTEST_VALUES.riskLambda ||
+    params.source !== CONTEST_VALUES.source ||
+    params.target !== CONTEST_VALUES.target;
+
   const isDefault = useMemo(() => {
     if (params.penaltyA !== DEFAULT_PARAMS.penaltyA) return false;
     if (params.riskLambda !== DEFAULT_PARAMS.riskLambda) return false;
@@ -154,6 +196,19 @@ export function useStoreValue(): Store {
         const cur = p.risk[key];
         const next = cur.includes(iso) ? cur.filter((x) => x !== iso) : [...cur, iso];
         return { ...p, risk: { ...p.risk, [key]: next } };
+      }),
+    dev,
+    setDev,
+    advancedDeviates,
+    resetAdvanced: () =>
+      setParams((p) => ({ ...p, ...CONTEST_VALUES, risk: { ...p.risk, ...DEFAULT_PARAMS.risk } })),
+    setV2Corridor: (source, target) => setParams((p) => ({ ...p, v2Source: source, v2Target: target })),
+    toggleV2Hazard: (h) =>
+      setParams((p) => {
+        const has = p.v2Hazards.includes(h);
+        // The instance grid has no hazard-free entry, so the last one cannot go.
+        if (has && p.v2Hazards.length === 1) return p;
+        return { ...p, v2Hazards: has ? p.v2Hazards.filter((x) => x !== h) : [...p.v2Hazards, h] };
       }),
     reset: () => setParams(DEFAULT_PARAMS),
     isDefault,

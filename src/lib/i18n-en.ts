@@ -20,7 +20,6 @@ export const EN: Record<string, string> = {
   "聯運": "Multimodal",
   "40q": "40q",
   "稽核": "Audit",
-  "共用參數": "Shared parameters",
   "有 {n} 個作弊態勝過最佳合法航線": "{n} cheat states beat the best legal route",
   "低於臨界 {a}:有 {n} 個作弊態勝過最佳合法航線":
     "Below critical {a}: {n} cheat states beat the best legal route",
@@ -34,9 +33,6 @@ export const EN: Record<string, string> = {
   "非出貨 λ = 衍生能量地貌;−97.4936 等已發表數字不適用":
     "Non-default λ = a derived landscape; published figures such as −97.4936 do not apply",
   "荷莫茲海峽封鎖": "Strait of Hormuz blockade",
-  "已封鎖 {n} 港": "{n} ports blocked",
-  "全部運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)並重跑 10,000 次蒙地卡羅情境(~2 ms)。":
-    "Everything recomputes live in your browser: each adjustment re-sweeps all 65,536 quantum states (~0.5 ms) and reruns 10,000 Monte Carlo scenarios (~2 ms).",
   "起點": "Origin",
   "終點": "Destination",
   "只列出有向路網可達的港口": "Only ports reachable on the directed network are listed",
@@ -467,8 +463,6 @@ export const EN: Record<string, string> = {
   // estimate-grade cost figures
   "每日延誤成本(estimate)":
     "Daily delay cost (estimate)",
-  "繞好望角 +12 天(estimate)":
-    "+12 days round the Cape (estimate)",
   "繞好望角 +12 天(estimate);2026-02 事實封鎖情境":
     "+12 days round the Cape (estimate); the Feb 2026 de-facto closure scenario",
   "成本怎麼算出來的":
@@ -567,4 +561,40 @@ export const EN: Record<string, string> = {
     "tier-1 pure quantum",
   "tier-2 hybrid":
     "tier-2 hybrid",
+
+  // advanced mode: default sidebar vs developer knobs
+  "風險項":
+    "Hazards",
+  "至少保留一項":
+    "Keep at least one",
+  "港口封鎖":
+    "Port closures",
+  "點地圖或港口列表上的港口即可封鎖":
+    "Click a port on the map or list to close it",
+  "起訖與風險套用於「30 港」分頁;其餘分頁為固定實例。":
+    "Corridor and hazards drive the 30-port tab; the other tabs are fixed instances.",
+  "進階":
+    "Advanced",
+  "展開會改變實例的旋鈕;預設關閉":
+    "Opens knobs that change the instance; off by default",
+  "已偏離比賽實例":
+    "Off the competition instance",
+  "進階旋鈕已被調整,畫面上的 9 港數字不再對應報告與證據。30 港平台結果不受影響。":
+    "An advanced knob has been moved, so the nine-port figures on screen no longer correspond to the report and its evidence. The 30-port platform results are unaffected.",
+  "一鍵還原":
+    "Restore",
+  "還原比賽值":
+    "Restore competition values",
+  "這些旋鈕會產生衍生實例。30 港分頁的 33 qubit 結果是平台預先算好的,不受影響。":
+    "These knobs produce derived instances. The 30-port tab's 33-qubit results were precomputed on the platform and are unaffected.",
+  "penalty_A":
+    "penalty_A",
+  "9 港實例的運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)。":
+    "The nine-port instance is solved live in your browser: every change re-sweeps 65,536 quantum states (~0.5 ms).",
+  "以下四個求解器以比賽設定即時執行。想調整 budget、shots、p、種子等旋鈕,請開啟頁首的「進階」。":
+    "The four solvers below run live at the competition settings. To reach the budget, shots, p and seed knobs, switch on Advanced in the header.",
+  "在左側切換":
+    "switch it in the sidebar",
+  "開啟頁首「進階」後可拖動 penalty_A,看約束何時失效":
+    "Switch on Advanced in the header to drag penalty_A and watch the constraint fail",
 };

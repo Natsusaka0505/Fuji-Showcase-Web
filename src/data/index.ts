@@ -239,3 +239,12 @@ export const report40 = report40Json as {
 };
 
 export type { Port };
+
+/** The 15 corridors the 30-port campaign covers, in file order. */
+export const v2Corridors: { source: string; target: string }[] = (() => {
+  const seen = new Map<string, { source: string; target: string }>();
+  for (const i of (v2Json as { instances: { source: string; target: string }[] }).instances) {
+    seen.set(`${i.source}\u2192${i.target}`, { source: i.source, target: i.target });
+  }
+  return [...seen.values()];
+})();

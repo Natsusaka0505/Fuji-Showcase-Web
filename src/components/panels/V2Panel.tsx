@@ -10,9 +10,10 @@
  */
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Card, Stat, Chip, Caveat, Prose, Mono } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
+import { useStore } from "@/lib/store";
 import { v2, type V2Instance } from "@/data";
 import { LandLayer } from "@/components/LandLayer";
 
@@ -76,30 +77,18 @@ function RouteLine({ names, tone = "ink" }: { names: string[]; tone?: string }) 
 
 export function V2Panel() {
   const { t } = useI18n();
-  const pairs = useMemo(() => {
-    const seen = new Map<string, { source: string; target: string }>();
-    for (const i of v2.instances) seen.set(`${i.source}→${i.target}`, { source: i.source, target: i.target });
-    return [...seen.values()];
-  }, []);
-  const [pairKey, setPairKey] = useState("Busan→Hamburg");
-  const [hazards, setHazards] = useState<Set<string>>(new Set(["war"]));
+  // Corridor and hazards live in the shared sidebar, so every tab agrees on
+  // what scenario is being looked at.
+  const { params } = useStore();
+  const hazards = new Set(params.v2Hazards);
 
   const inst: V2Instance | undefined = useMemo(() => {
-    const want = [...hazards].sort().join("+");
-    const [source, target] = pairKey.split("→");
+    const want = [...params.v2Hazards].sort().join("+");
     return v2.instances.find(
-      (i) => i.source === source && i.target === target && [...i.hazards].sort().join("+") === want,
+      (i) => i.source === params.v2Source && i.target === params.v2Target &&
+        [...i.hazards].sort().join("+") === want,
     );
-  }, [pairKey, hazards]);
-
-  const toggleHazard = (h: string) =>
-    setHazards((prev) => {
-      const next = new Set(prev);
-      if (next.has(h)) {
-        if (next.size > 1) next.delete(h); // the grid has no hazard-free instance
-      } else next.add(h);
-      return next;
-    });
+  }, [params.v2Source, params.v2Target, params.v2Hazards]);
 
   if (!inst) return null;
   const Q = inst.quantum;
@@ -129,27 +118,15 @@ export function V2Panel() {
         right={<Chip label={`${inst.qubits} qubits`} tone="quantum" filled />}
         className="xl:col-span-2"
       >
-        <div className="mb-3 flex flex-wrap items-center gap-3">
-          <select value={pairKey} onChange={(e) => setPairKey(e.target.value)}
-            className="rounded-lg border border-border bg-surface-alt px-2 py-1.5 text-xs text-ink">
-            {pairs.map((p) => (
-              <option key={`${p.source}→${p.target}`} value={`${p.source}→${p.target}`}>
-                {p.source} → {p.target}
-              </option>
-            ))}
-          </select>
-          <div className="flex gap-1.5">
-            {HAZ.map((h) => (
-              <button key={h} type="button" onClick={() => toggleHazard(h)} aria-pressed={hazards.has(h)}
-                className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-colors ${
-                  hazards.has(h)
-                    ? h === "war" ? "border-bad bg-bad text-bg" : h === "typhoon" ? "border-warn bg-warn text-bg" : "border-quantum bg-quantum text-bg"
-                    : "border-border text-ink-dim hover:text-ink"
-                }`}>
-                {t(HAZ_LABEL[h])}
-              </button>
-            ))}
-          </div>
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-mono font-bold text-ink">{params.v2Source} → {params.v2Target}</span>
+          {HAZ.filter((h) => hazards.has(h)).map((h) => (
+            <span key={h} className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-bg ${
+              h === "war" ? "bg-bad" : h === "typhoon" ? "bg-warn" : "bg-quantum"}`}>
+              {t(HAZ_LABEL[h])}
+            </span>
+          ))}
+          <span className="text-ink-faint">{t("在左側切換")}</span>
         </div>
 
         <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="w-full" role="img" aria-label={t("30 港航線網路圖")}>

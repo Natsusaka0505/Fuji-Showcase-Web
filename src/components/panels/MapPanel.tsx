@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { ports, penaltySweep, solutions, meta, CRITICAL_A, fmtCost } from "@/data";
 
 export function MapPanel() {
-  const { params, togglePort, solution, model, derived } = useStore();
+  const { params, togglePort, solution, model, derived, dev } = useStore();
   const { t } = useI18n();
   const best = solution.bestClean;
   const cheating = solution.cheatStates > 0;
@@ -59,7 +59,7 @@ export function MapPanel() {
 
       <Card
         title={t("Penalty 為什麼必要")}
-        subtitle={t("拖動側欄 penalty_A,看約束何時失效")}
+        subtitle={dev ? t("拖動側欄 penalty_A,看約束何時失效") : t("開啟頁首「進階」後可拖動 penalty_A,看約束何時失效")}
         right={
           <Chip
             label={cheating ? t("{n} 個作弊態", { n: solution.cheatStates }) : t("0 作弊態")}

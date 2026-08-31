@@ -19,7 +19,8 @@ import { runGas, amplificationCurve, DEFAULT_GAS_PARAMS } from "@/engine/grover"
 import { meta, result40, fmtHours } from "@/data";
 
 export function AlgoPanel() {
-  const { params, model, scores } = useStore();
+  const { t } = useI18n();
+  const { params, model, scores, dev } = useStore();
   const energies = useMemo(
     () => model.energies({ penaltyA: params.penaltyA, scores }),
     [model, params.penaltyA, scores],
@@ -35,17 +36,22 @@ export function AlgoPanel() {
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
-      <GroverCard model={model} energies={energies} optimum={optimum} />
-      <AmplificationCard energies={energies} />
-      <QaoaCard energies={energies} optimum={optimum} />
-      <SaCard energies={energies} optimum={optimum} />
+      {!dev && (
+        <p className="rounded-lg border border-border bg-surface-alt px-3 py-2 text-[11px] leading-relaxed text-ink-dim xl:col-span-2">
+          {t("以下四個求解器以比賽設定即時執行。想調整 budget、shots、p、種子等旋鈕,請開啟頁首的「進階」。")}
+        </p>
+      )}
+      <GroverCard model={model} energies={energies} optimum={optimum} dev={dev} />
+      <AmplificationCard energies={energies} dev={dev} />
+      <QaoaCard energies={energies} optimum={optimum} dev={dev} />
+      <SaCard energies={energies} optimum={optimum} dev={dev} />
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ Grover */
 
-function GroverCard({ model, energies, optimum }: { model: Q9Model; energies: Float64Array; optimum: number }) {
+function GroverCard({ model, energies, optimum, dev }: { model: Q9Model; energies: Float64Array; optimum: number; dev: boolean }) {
   const { t } = useI18n();
   const [budget, setBudget] = useState(DEFAULT_GAS_PARAMS.budget);
   const [shots, setShots] = useState(DEFAULT_GAS_PARAMS.shots);
@@ -87,27 +93,29 @@ function GroverCard({ model, energies, optimum }: { model: Q9Model; energies: Fl
       </div>
       {best.complete && <Route iso={best.routeIso} className="mt-3" />}
 
-      <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
-        <Slider label={t("budget(BBHT 輪次)")} value={budget} min={1} max={120} step={1}
-          onChange={setBudget} format={(v) => v.toFixed(0)}
-          hint={t("平台 40q 那次只有 1 輪")} />
-        <Slider label={t("shots(每輪取樣)")} value={shots} min={8} max={256} step={8}
-          onChange={setShots} format={(v) => v.toFixed(0)} tone="quantum" />
-        <Slider label={t("亂數種子")} value={seed} min={1} max={40} step={1}
-          onChange={setSeed} format={(v) => v.toFixed(0)} tone="faint"
-          hint={t("GAS 是機率演算法,換種子結果會變")} />
-        <div className="mb-4">
-          <button type="button" onClick={() => setWarmStart((w) => !w)}
-            className={`w-full rounded-lg border px-3 py-2 text-xs transition-colors ${
-              warmStart ? "border-warn bg-warn text-bg font-bold" : "border-border text-ink-dim hover:text-ink"
-            }`}>
-            warm start y₀ = {result40.warm_start_y0}
-          </button>
-          <p className="mt-1 text-[10px] leading-snug text-ink-faint">
-            {t("照平台設定:只標記能量低於 -96 的態,marked set 極小、極難找")}
-          </p>
+      {dev && (
+        <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
+          <Slider label={t("budget(BBHT 輪次)")} value={budget} min={1} max={120} step={1}
+            onChange={setBudget} format={(v) => v.toFixed(0)}
+            hint={t("平台 40q 那次只有 1 輪")} />
+          <Slider label={t("shots(每輪取樣)")} value={shots} min={8} max={256} step={8}
+            onChange={setShots} format={(v) => v.toFixed(0)} tone="quantum" />
+          <Slider label={t("亂數種子")} value={seed} min={1} max={40} step={1}
+            onChange={setSeed} format={(v) => v.toFixed(0)} tone="faint"
+            hint={t("GAS 是機率演算法,換種子結果會變")} />
+          <div className="mb-4">
+            <button type="button" onClick={() => setWarmStart((w) => !w)}
+              className={`w-full rounded-lg border px-3 py-2 text-xs transition-colors ${
+                warmStart ? "border-warn bg-warn text-bg font-bold" : "border-border text-ink-dim hover:text-ink"
+              }`}>
+              warm start y₀ = {result40.warm_start_y0}
+            </button>
+            <p className="mt-1 text-[10px] leading-snug text-ink-faint">
+              {t("照平台設定:只標記能量低於 -96 的態,marked set 極小、極難找")}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       <Prose>
         {t("藍點是門檻下降的時刻。每次採到更好的解,門檻就收緊、被標記的態變少,下一輪需要更多次旋轉才找得到 —— 這就是 BBHT 逐步加大 r 的機制。把")}
@@ -125,7 +133,7 @@ function GroverCard({ model, energies, optimum }: { model: Q9Model; energies: Fl
 
 /* --------------------------------------------------- Amplification anatomy */
 
-function AmplificationCard({ energies }: { energies: Float64Array }) {
+function AmplificationCard({ energies, dev }: { energies: Float64Array; dev: boolean }) {
   const { t } = useI18n();
   const [threshold, setThreshold] = useState(-96);
   const [rotations, setRotations] = useState(60);
@@ -157,13 +165,15 @@ function AmplificationCard({ energies }: { energies: Float64Array }) {
         <Stat label={t("理論 √(N/M)")} value={String(optimalR)} unit={t("轉")} />
       </div>
 
-      <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
-        <Slider label={t("門檻 y")} value={threshold} min={-97.5} max={-40} step={0.5}
-          onChange={setThreshold} format={(v) => v.toFixed(1)}
-          hint={t("越接近最優,被標記的態越少、越難找")} tone="bad" />
-        <Slider label={t("旋轉上限")} value={rotations} min={5} max={300} step={5}
-          onChange={setRotations} format={(v) => v.toFixed(0)} tone="quantum" />
-      </div>
+      {dev && (
+        <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
+          <Slider label={t("門檻 y")} value={threshold} min={-97.5} max={-40} step={0.5}
+            onChange={setThreshold} format={(v) => v.toFixed(1)}
+            hint={t("越接近最優,被標記的態越少、越難找")} tone="bad" />
+          <Slider label={t("旋轉上限")} value={rotations} min={5} max={300} step={5}
+            onChange={setRotations} format={(v) => v.toFixed(0)} tone="quantum" />
+        </div>
+      )}
 
       <Prose>
         {t("實測峰值落在")} <Mono>{peakAt}</Mono> {t("轉,理論估計")} <Mono>{optimalR}</Mono>{" "}
@@ -175,7 +185,7 @@ function AmplificationCard({ energies }: { energies: Float64Array }) {
 
 /* -------------------------------------------------------------------- QAOA */
 
-function QaoaCard({ energies, optimum }: { energies: Float64Array; optimum: number }) {
+function QaoaCard({ energies, optimum, dev }: { energies: Float64Array; optimum: number; dev: boolean }) {
   const { t } = useI18n();
   const [p, setP] = useState(DEFAULT_QAOA_PARAMS.p);
   const [maxIter, setMaxIter] = useState(DEFAULT_QAOA_PARAMS.maxIter);
@@ -209,25 +219,27 @@ function QaoaCard({ energies, optimum }: { energies: Float64Array; optimum: numb
         <Stat label={t("P(最優)")} value={`${(result.optimumProbability * 100).toFixed(3)}%`} tone="gold" />
       </div>
 
-      <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
-        <Slider label={t("p(電路深度)")} value={p} min={1} max={5} step={1}
-          onChange={setP} format={(v) => v.toFixed(0)}
-          hint={t("每層 = 一個成本相位 + 一個混合層")} tone="quantum" />
-        <Slider label={t("最大迭代")} value={maxIter} min={10} max={150} step={5}
-          onChange={setMaxIter} format={(v) => v.toFixed(0)} />
-        <Slider label={t("亂數種子")} value={seed} min={1} max={40} step={1}
-          onChange={setSeed} format={(v) => v.toFixed(0)} tone="faint"
-          hint={t("初始角度隨機,會落進不同局部解")} />
-        <div className="mb-4">
-          <button type="button" onClick={run} disabled={pending}
-            className="w-full rounded-lg border border-quantum bg-quantum px-3 py-2 text-xs font-bold text-bg transition-opacity hover:opacity-85 disabled:opacity-50">
-            {pending ? t("計算中…") : t("重新執行 QAOA")}
-          </button>
-          <p className="mt-1 text-[10px] leading-snug text-ink-faint">
-            {t("約 0.3–1 秒,故改參數後手動觸發")}
-          </p>
+      {dev && (
+        <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
+          <Slider label={t("p(電路深度)")} value={p} min={1} max={5} step={1}
+            onChange={setP} format={(v) => v.toFixed(0)}
+            hint={t("每層 = 一個成本相位 + 一個混合層")} tone="quantum" />
+          <Slider label={t("最大迭代")} value={maxIter} min={10} max={150} step={5}
+            onChange={setMaxIter} format={(v) => v.toFixed(0)} />
+          <Slider label={t("亂數種子")} value={seed} min={1} max={40} step={1}
+            onChange={setSeed} format={(v) => v.toFixed(0)} tone="faint"
+            hint={t("初始角度隨機,會落進不同局部解")} />
+          <div className="mb-4">
+            <button type="button" onClick={run} disabled={pending}
+              className="w-full rounded-lg border border-quantum bg-quantum px-3 py-2 text-xs font-bold text-bg transition-opacity hover:opacity-85 disabled:opacity-50">
+              {pending ? t("計算中…") : t("重新執行 QAOA")}
+            </button>
+            <p className="mt-1 text-[10px] leading-snug text-ink-faint">
+              {t("約 0.3–1 秒,故改參數後手動觸發")}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mt-2">
         <div className="mb-2 text-[10px] uppercase tracking-wide text-ink-faint">{t("最可能的量測結果")}</div>
@@ -251,7 +263,7 @@ function QaoaCard({ energies, optimum }: { energies: Float64Array; optimum: numb
 
 /* ---------------------------------------------------------------------- SA */
 
-function SaCard({ energies, optimum }: { energies: Float64Array; optimum: number }) {
+function SaCard({ energies, optimum, dev }: { energies: Float64Array; optimum: number; dev: boolean }) {
   const { t } = useI18n();
   const [iterations, setIterations] = useState(DEFAULT_SA_PARAMS.iterations);
   const [startTemp, setStartTemp] = useState(DEFAULT_SA_PARAMS.startTemp);
@@ -282,15 +294,17 @@ function SaCard({ energies, optimum }: { energies: Float64Array; optimum: number
         <Stat label={t("接受率")} value={`${((result.accepted / iterations) * 100).toFixed(0)}%`} />
       </div>
 
-      <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
-        <Slider label={t("迭代數")} value={iterations} min={200} max={20000} step={200}
-          onChange={setIterations} format={(v) => v.toLocaleString()} tone="warn" />
-        <Slider label={t("起始溫度")} value={startTemp} min={1} max={200} step={1}
-          onChange={setStartTemp} format={(v) => v.toFixed(0)} tone="warn"
-          hint={t("太低會卡在局部解,太高等於亂數搜尋")} />
-        <Slider label={t("亂數種子")} value={seed} min={1} max={40} step={1}
-          onChange={setSeed} format={(v) => v.toFixed(0)} tone="faint" />
-      </div>
+      {dev && (
+        <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
+          <Slider label={t("迭代數")} value={iterations} min={200} max={20000} step={200}
+            onChange={setIterations} format={(v) => v.toLocaleString()} tone="warn" />
+          <Slider label={t("起始溫度")} value={startTemp} min={1} max={200} step={1}
+            onChange={setStartTemp} format={(v) => v.toFixed(0)} tone="warn"
+            hint={t("太低會卡在局部解,太高等於亂數搜尋")} />
+          <Slider label={t("亂數種子")} value={seed} min={1} max={40} step={1}
+            onChange={setSeed} format={(v) => v.toFixed(0)} tone="faint" />
+        </div>
+      )}
 
       <Prose>
         {t("古典基準線。報告中 SA 拿到 -96.8297(近似比 0.9932),QAOA 則命中 -97.4936。把迭代數拉低或起始溫度調小,可以看到它卡在局部解 —— 那正是組合最佳化的難處。")}
