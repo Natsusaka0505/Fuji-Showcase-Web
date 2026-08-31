@@ -191,7 +191,7 @@ export function QuantumPanel() {
           <Stat label={t("本隊")} value="40q" tone="gold" />
         </div>
         <Prose>
-          {t("Fujitsu 模擬器上限 40 qubit。2024 冠軍 TU Delft 用 39q,本隊用滿上限 —— 不只超越去年冠軍,而是打到模擬器天花板。")}
+          {t("Fujitsu 模擬器上限 40 qubit。2024 冠軍 TU Delft 用 39q,本隊用滿上限。")}
         </Prose>
       </Card>
 
