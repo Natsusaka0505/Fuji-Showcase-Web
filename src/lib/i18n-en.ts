@@ -433,14 +433,9 @@ export const EN: Record<string, string> = {
   "量子 vs 古典": "Quantum vs classical",
   "同一實例內對比;cost 為 full-QUBO 能量,跨實例不可比":
     "Compared within one instance; costs are full-QUBO energies and are never comparable across instances",
-  "命中古典最優": "Hit classical optimum",
-  "tier-1 近似比": "tier-1 ratio",
-  "tier-2 近似比": "tier-2 ratio",
   "可行採樣率": "Feasible sample rate",
   "此實例的量子採樣沒有抽到任何可行態(105 個實例中有 10 個如此)—— 誠實列出,不遮醜。tier-2 結果來自後處理管線。":
     "This instance's quantum sampling drew no feasible state at all (10 of the 105 instances did) — listed honestly, warts and all. The tier-2 result comes from the post-processing pipeline.",
-  "tier-1 / tier-2 為平台管線的兩階段輸出(定義以證據 job 為準,待上游文件補充);近似比 = 該實例古典最優 cost ÷ 量子解 cost。":
-    "tier-1 / tier-2 are the two stages of the platform pipeline's output (definitions per the evidence jobs, upstream documentation pending); ratio = this instance's classical optimum cost ÷ the quantum solution's cost.",
   "古典 top 5": "Classical top 5",
   "窮舉 {n} 條可行路徑後的排行": "Ranking after enumerating {n} feasible paths",
   "量子採樣到的可行航線": "Feasible routes the quantum sampler drew",
@@ -458,4 +453,24 @@ export const EN: Record<string, string> = {
   // Site-wide footer disclaimer
   "本站所有量子結果均為富士通 1024×FX700 無雜訊古典態向量模擬,非量子實機,不宣稱量子優勢。":
     "All quantum results on this site are noise-free classical statevector simulations on Fujitsu's 1024× FX700 cluster — not quantum hardware; no quantum-advantage claim.",
+
+  // v2: tier-1 pure quantum vs tier-2 hybrid
+  "純量子命中古典最優":
+    "Pure quantum matched classical optimum",
+  "hybrid 命中古典最優":
+    "Hybrid matched classical optimum",
+  "純量子近似比 {r}":
+    "Pure-quantum ratio {r}",
+  "純量子抽樣無合法樣本":
+    "Pure-quantum sampling drew no feasible route",
+  "tier-1 純量子":
+    "tier-1 pure quantum",
+  "tier-2 hybrid":
+    "tier-2 hybrid",
+  "tier-2 hybrid(量子 + 古典修補)":
+    "tier-2 hybrid (quantum + classical repair)",
+  "無":
+    "None",
+  "tier-1 = 純量子抽樣的最佳合法航線;tier-2 = 量子抽樣再經古典修補的 hybrid 結果,兩者分開列示,不併入同一排行。近似比 = 該實例古典最優 cost ÷ 該解 cost,1.0 表示命中古典精確解。":
+    "tier-1 is the best feasible route pure-quantum sampling returned; tier-2 is the hybrid result after classical repair. They are listed separately and never merged into one ranking. The ratio is the instance's classical optimum cost divided by that solution's cost, so 1.0 means it matched the exact classical answer.",
 };

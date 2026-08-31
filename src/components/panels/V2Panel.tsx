@@ -199,16 +199,21 @@ export function V2Panel() {
         title={t("量子 vs 古典")}
         subtitle={t("同一實例內對比;cost 為 full-QUBO 能量,跨實例不可比")}
         right={
-          Q.tier2_ratio === 1.0 || Q.tier1_ratio === 1.0
-            ? <Chip label={t("命中古典最優")} tone="good" filled />
-            : <Chip label={t("近似比 {r}", { r: (Q.tier2_ratio ?? Q.tier1_ratio ?? 0).toFixed(6) })} tone="warn" />
+          // tier-1 and tier-2 are different claims, so they never share a chip.
+          Q.tier1_ratio === 1.0
+            ? <Chip label={t("純量子命中古典最優")} tone="good" filled />
+            : Q.tier2_ratio === 1.0
+              ? <Chip label={t("hybrid 命中古典最優")} tone="good" />
+              : Q.tier1_ratio !== null
+                ? <Chip label={t("純量子近似比 {r}", { r: Q.tier1_ratio.toFixed(6) })} tone="warn" />
+                : <Chip label={t("純量子抽樣無合法樣本")} tone="warn" />
         }
       >
         <div className="flex gap-3">
-          <Stat label={t("tier-1 近似比")} value={Q.tier1_ratio === null ? "—" : Q.tier1_ratio.toFixed(6)}
-            tone={Q.tier1_ratio === 1.0 ? "good" : "quantum"} />
-          <Stat label={t("tier-2 近似比")} value={Q.tier2_ratio === null ? "—" : Q.tier2_ratio.toFixed(6)}
-            tone={Q.tier2_ratio === 1.0 ? "good" : "quantum"} />
+          <Stat label={t("tier-1 純量子")} value={Q.tier1_ratio === null ? "—" : Q.tier1_ratio.toFixed(6)}
+            tone={Q.tier1_ratio === 1.0 ? "good" : Q.tier1_ratio === null ? "faint" : "quantum"} />
+          <Stat label={t("tier-2 hybrid")} value={Q.tier2_ratio === null ? "—" : Q.tier2_ratio.toFixed(6)}
+            tone={Q.tier2_ratio === 1.0 ? "good" : Q.tier2_ratio === null ? "faint" : "quantum"} />
           <Stat label={t("可行採樣率")} value={Q.feasible_rate === 0 ? "0" : Q.feasible_rate.toExponential(1)}
             tone={Q.feasible_rate === 0 ? "bad" : "ink"} />
         </div>
@@ -217,24 +222,24 @@ export function V2Panel() {
             <div className="mb-1 text-[10px] uppercase tracking-wide text-ink-faint">{t("古典最優")}</div>
             <RouteLine names={classicalBest.route} tone="text-gold" />
           </div>
-          {Q.tier1_route && (
-            <div>
-              <div className="mb-1 text-[10px] uppercase tracking-wide text-ink-faint">{t("量子 tier-1")}</div>
-              <RouteLine names={Q.tier1_route} tone="text-quantum" />
-            </div>
-          )}
-          {Q.tier2_route && (
-            <div>
-              <div className="mb-1 text-[10px] uppercase tracking-wide text-ink-faint">{t("量子 tier-2")}</div>
-              <RouteLine names={Q.tier2_route} tone="text-good" />
-            </div>
-          )}
+          <div>
+            <div className="mb-1 text-[10px] uppercase tracking-wide text-ink-faint">{t("tier-1 純量子")}</div>
+            {Q.tier1_ratio !== null && Q.tier1_route
+              ? <RouteLine names={Q.tier1_route} tone="text-quantum" />
+              : <p className="text-xs text-ink-faint">{t("純量子抽樣無合法樣本")}</p>}
+          </div>
+          <div>
+            <div className="mb-1 text-[10px] uppercase tracking-wide text-ink-faint">{t("tier-2 hybrid(量子 + 古典修補)")}</div>
+            {Q.tier2_ratio !== null && Q.tier2_route
+              ? <RouteLine names={Q.tier2_route} tone="text-good" />
+              : <p className="text-xs text-ink-faint">{t("無")}</p>}
+          </div>
         </div>
         {Q.feasible_rate === 0 && (
           <Caveat>{t("此實例的量子採樣沒有抽到任何可行態(105 個實例中有 10 個如此)—— 誠實列出,不遮醜。tier-2 結果來自後處理管線。")}</Caveat>
         )}
         <Caveat>
-          {t("tier-1 / tier-2 為平台管線的兩階段輸出(定義以證據 job 為準,待上游文件補充);近似比 = 該實例古典最優 cost ÷ 量子解 cost。")}
+          {t("tier-1 = 純量子抽樣的最佳合法航線;tier-2 = 量子抽樣再經古典修補的 hybrid 結果,兩者分開列示,不併入同一排行。近似比 = 該實例古典最優 cost ÷ 該解 cost,1.0 表示命中古典精確解。")}
         </Caveat>
       </Card>
 

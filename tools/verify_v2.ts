@@ -65,6 +65,28 @@ check("tier ratios in (0.99, 1] and feasible_rate in [0, 1%]", ratioBad === 0);
 check("feasible_rate 0 ⟺ empty quantum route list", zeroBad === 0);
 check("one unique evidence job per instance", jobs.size === v2.instances.length);
 
+// The ten null-ratio instances still carry a tier1_route the pure-quantum run
+// never actually sampled, so the UI must gate on the ratio being null rather
+// than on the route being present. Assert the trap still exists, so a future
+// drop-in that quietly drops those routes does not silently change the rule.
+const nullT1 = v2.instances.filter((i) => i.quantum.tier1_ratio === null);
+const nullT1WithRoute = nullT1.filter((i) => i.quantum.tier1_route !== null);
+check(
+  "null tier1_ratio still ships a tier1_route (UI must gate on the ratio)",
+  nullT1WithRoute.length === nullT1.length,
+  `${nullT1WithRoute.length}/${nullT1.length}`,
+);
+check(
+  "every null tier1_ratio has feasible_rate 0 and no sampled routes",
+  nullT1.every((i) => i.quantum.feasible_rate === 0 && i.quantum.q_routes.length === 0),
+);
+const nullT2 = v2.instances.filter((i) => i.quantum.tier2_ratio === null);
+console.log(
+  `  note  tier-1 null ${nullT1.length}, hit 1.0 ${v2.instances.filter((i) => i.quantum.tier1_ratio === 1).length}` +
+  ` | tier-2 null ${nullT2.length}, hit 1.0 ${v2.instances.filter((i) => i.quantum.tier2_ratio === 1).length}` +
+  ` | qubits ${[...new Set(v2.instances.map((i) => i.qubits))].sort().join("/")}`,
+);
+
 const zeros = v2.instances.filter((i: { quantum: { feasible_rate: number } }) => i.quantum.feasible_rate === 0).length;
 console.log(`        note: ${zeros} instances sampled no feasible state (shown honestly in the UI)`);
 
