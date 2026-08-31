@@ -1,0 +1,300 @@
+/**
+ * The v2 platform campaign: 30 ports, 15 corridors × 7 hazard sets, 105 jobs
+ * run on the Fujitsu 1024× FX700 cluster (30–33 qubits each).
+ *
+ * Everything on this tab is a replay of platform results — the QUBO inputs
+ * never left the cluster, so nothing recomputes in the browser. Per the data's
+ * own convention, costs are full-QUBO energies with per-instance offsets and
+ * must never be compared across instances; ratios are always against the same
+ * instance's classical optimum.
+ */
+"use client";
+
+import { useMemo, useState } from "react";
+import { Card, Stat, Chip, Caveat, Prose, Mono } from "@/components/ui";
+import { useI18n } from "@/lib/i18n";
+import { v2, type V2Instance } from "@/data";
+
+const MAP_W = 360;
+const MAP_H = 190;
+const PAD = 12;
+const LAT0 = 62;
+const LAT1 = -12;
+
+const project = (lat: number, lon: number) => ({
+  x: PAD + ((lon + 180) / 360) * (MAP_W - 2 * PAD),
+  y: PAD + ((LAT0 - lat) / (LAT0 - LAT1)) * (MAP_H - 2 * PAD),
+});
+
+type Pt = { x: number; y: number };
+
+/** Split a leg crossing the antimeridian so it wraps instead of sweeping back. */
+function legs(a: Pt, b: Pt): [Pt, Pt][] {
+  const span = MAP_W - 2 * PAD;
+  if (Math.abs(b.x - a.x) <= span / 2) return [[a, b]];
+  const goingRight = a.x > b.x;
+  const dx = goingRight ? MAP_W - a.x + b.x : a.x + (MAP_W - b.x);
+  const t = (goingRight ? MAP_W - a.x : a.x) / dx;
+  const yMid = a.y + (b.y - a.y) * t;
+  return goingRight
+    ? [[a, { x: MAP_W, y: yMid }], [{ x: 0, y: yMid }, b]]
+    : [[a, { x: 0, y: yMid }], [{ x: MAP_W, y: yMid }, b]];
+}
+
+const SHORT: Record<string, string> = {
+  "New York/New Jersey": "NY/NJ",
+  "Ningbo-Zhoushan": "Ningbo",
+  "Tanjung Pelepas": "T.Pelepas",
+  "Tanjung Priok": "T.Priok",
+  "Los Angeles": "LA",
+  "Long Beach": "L.Beach",
+  "Ho Chi Minh": "HCMC",
+  "Laem Chabang": "L.Chabang",
+  "Port Klang": "P.Klang",
+  "Jebel Ali": "J.Ali",
+  "Beibu Gulf": "Beibu",
+  "Tanger-Med": "Tanger",
+};
+const short = (p: string) => SHORT[p] ?? p;
+
+const HAZ = ["earthquake", "typhoon", "war"] as const;
+const HAZ_LABEL: Record<string, string> = { earthquake: "地震", typhoon: "颱風", war: "戰爭" };
+
+function RouteLine({ names, tone = "ink" }: { names: string[]; tone?: string }) {
+  return (
+    <span className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+      {names.map((p, i) => (
+        <span key={`${p}-${i}`} className="flex items-center gap-1">
+          {i > 0 && <span className="text-[10px] text-ink-faint">→</span>}
+          <span className={`font-mono text-[11px] font-bold ${tone}`}>{short(p)}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+export function V2Panel() {
+  const { t } = useI18n();
+  const pairs = useMemo(() => {
+    const seen = new Map<string, { source: string; target: string }>();
+    for (const i of v2.instances) seen.set(`${i.source}→${i.target}`, { source: i.source, target: i.target });
+    return [...seen.values()];
+  }, []);
+  const [pairKey, setPairKey] = useState("Busan→Hamburg");
+  const [hazards, setHazards] = useState<Set<string>>(new Set(["war"]));
+
+  const inst: V2Instance | undefined = useMemo(() => {
+    const want = [...hazards].sort().join("+");
+    const [source, target] = pairKey.split("→");
+    return v2.instances.find(
+      (i) => i.source === source && i.target === target && [...i.hazards].sort().join("+") === want,
+    );
+  }, [pairKey, hazards]);
+
+  const toggleHazard = (h: string) =>
+    setHazards((prev) => {
+      const next = new Set(prev);
+      if (next.has(h)) {
+        if (next.size > 1) next.delete(h); // the grid has no hazard-free instance
+      } else next.add(h);
+      return next;
+    });
+
+  if (!inst) return null;
+  const Q = inst.quantum;
+  const classicalBest = inst.classical_top5[0];
+
+  const routePorts = new Set<string>([
+    ...classicalBest.route,
+    ...(Q.tier1_route ?? []),
+    ...(Q.tier2_route ?? []),
+  ]);
+
+  const drawRoute = (route: string[] | null, color: string, width: number, dash?: string) =>
+    route?.slice(0, -1).flatMap((from, i) => {
+      const a = project(v2.ports[from].lat, v2.ports[from].lon);
+      const b = project(v2.ports[route[i + 1]].lat, v2.ports[route[i + 1]].lon);
+      return legs(a, b).map(([p, q], j) => (
+        <line key={`${color}-${i}-${j}`} x1={p.x} y1={p.y} x2={q.x} y2={q.y}
+          stroke={color} strokeWidth={width} strokeDasharray={dash} strokeLinecap="round" />
+      ));
+    });
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-2">
+      <Card
+        title={t("30 港平台實測")}
+        subtitle={t("TEU 前 30 大港｜15 走廊 × 7 災害組合 = 105 個 30–33 qubit 平台實例")}
+        right={<Chip label={`${inst.qubits} qubits`} tone="quantum" filled />}
+        className="xl:col-span-2"
+      >
+        <div className="mb-3 flex flex-wrap items-center gap-3">
+          <select value={pairKey} onChange={(e) => setPairKey(e.target.value)}
+            className="rounded-lg border border-border bg-surface-alt px-2 py-1.5 text-xs text-ink">
+            {pairs.map((p) => (
+              <option key={`${p.source}→${p.target}`} value={`${p.source}→${p.target}`}>
+                {p.source} → {p.target}
+              </option>
+            ))}
+          </select>
+          <div className="flex gap-1.5">
+            {HAZ.map((h) => (
+              <button key={h} type="button" onClick={() => toggleHazard(h)} aria-pressed={hazards.has(h)}
+                className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-colors ${
+                  hazards.has(h)
+                    ? h === "war" ? "border-bad bg-bad text-bg" : h === "typhoon" ? "border-warn bg-warn text-bg" : "border-quantum bg-quantum text-bg"
+                    : "border-border text-ink-dim hover:text-ink"
+                }`}>
+                {t(HAZ_LABEL[h])}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="w-full" role="img" aria-label={t("30 港航線網路圖")}>
+          <rect x={0} y={0} width={MAP_W} height={MAP_H} rx={8} fill="var(--color-bg)" />
+          {[1, 2, 3].map((i) => (
+            <line key={`h${i}`} x1={0} y1={(MAP_H / 4) * i} x2={MAP_W} y2={(MAP_H / 4) * i}
+              stroke="var(--color-grid)" strokeWidth={0.5} />
+          ))}
+          {[1, 2, 3, 4, 5].map((i) => (
+            <line key={`v${i}`} x1={(MAP_W / 6) * i} y1={0} x2={(MAP_W / 6) * i} y2={MAP_H}
+              stroke="var(--color-grid)" strokeWidth={0.5} />
+          ))}
+          {drawRoute(Q.tier2_route, "var(--color-good)", 1.4, "1.5 2.5")}
+          {drawRoute(Q.tier1_route, "var(--color-quantum)", 1.6, "4 2")}
+          {drawRoute(classicalBest.route, "var(--color-gold)", 2.4)}
+          {Object.entries(v2.ports).map(([name, p]) => {
+            const { x, y } = project(p.lat, p.lon);
+            const onRoute = routePorts.has(name);
+            const isEnd = name === inst.source || name === inst.target;
+            return (
+              <g key={name}>
+                <title>{`${name}｜TEU #${p.teu_rank_2024}`}</title>
+                {isEnd && <circle cx={x} cy={y} r={6.5} fill="var(--color-gold)" opacity={0.25} />}
+                <circle cx={x} cy={y} r={onRoute ? 3.6 : 2.4}
+                  fill={onRoute ? "var(--color-gold)" : "var(--color-ink-faint)"}
+                  stroke="var(--color-bg)" strokeWidth={1} opacity={onRoute ? 1 : 0.75} />
+                {onRoute && (
+                  <text x={x} y={y - 6.5} fontSize={6.5} fontWeight="700" textAnchor="middle"
+                    fill="var(--color-gold)" className="pointer-events-none select-none">
+                    {short(name)}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+        <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+          <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 rounded" style={{ background: "var(--color-gold)" }} /><span className="text-[10px] text-ink-faint">{t("古典最優")}</span></span>
+          <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 rounded" style={{ background: "var(--color-quantum)" }} /><span className="text-[10px] text-ink-faint">{t("量子 tier-1")}</span></span>
+          <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 rounded" style={{ background: "var(--color-good)" }} /><span className="text-[10px] text-ink-faint">{t("量子 tier-2")}</span></span>
+        </div>
+        <Prose>
+          {t("切換災害組合看路線翻轉:Busan → Hamburg 在地震情境走 Mundra 線、颱風情境走馬六甲線、戰爭情境(蘇伊士/紅海封鎖)整條翻到跨太平洋 + 北美陸橋。這批是富士通 1024 節點 FX700 平台的實測結果 —— 不是本站瀏覽器模擬。")}
+        </Prose>
+      </Card>
+
+      <Card
+        title={t("量子 vs 古典")}
+        subtitle={t("同一實例內對比;cost 為 full-QUBO 能量,跨實例不可比")}
+        right={
+          Q.tier2_ratio === 1.0 || Q.tier1_ratio === 1.0
+            ? <Chip label={t("命中古典最優")} tone="good" filled />
+            : <Chip label={t("近似比 {r}", { r: (Q.tier2_ratio ?? Q.tier1_ratio ?? 0).toFixed(6) })} tone="warn" />
+        }
+      >
+        <div className="flex gap-3">
+          <Stat label={t("tier-1 近似比")} value={Q.tier1_ratio === null ? "—" : Q.tier1_ratio.toFixed(6)}
+            tone={Q.tier1_ratio === 1.0 ? "good" : "quantum"} />
+          <Stat label={t("tier-2 近似比")} value={Q.tier2_ratio === null ? "—" : Q.tier2_ratio.toFixed(6)}
+            tone={Q.tier2_ratio === 1.0 ? "good" : "quantum"} />
+          <Stat label={t("可行採樣率")} value={Q.feasible_rate === 0 ? "0" : Q.feasible_rate.toExponential(1)}
+            tone={Q.feasible_rate === 0 ? "bad" : "ink"} />
+        </div>
+        <div className="mt-3 space-y-2">
+          <div>
+            <div className="mb-1 text-[10px] uppercase tracking-wide text-ink-faint">{t("古典最優")}</div>
+            <RouteLine names={classicalBest.route} tone="text-gold" />
+          </div>
+          {Q.tier1_route && (
+            <div>
+              <div className="mb-1 text-[10px] uppercase tracking-wide text-ink-faint">{t("量子 tier-1")}</div>
+              <RouteLine names={Q.tier1_route} tone="text-quantum" />
+            </div>
+          )}
+          {Q.tier2_route && (
+            <div>
+              <div className="mb-1 text-[10px] uppercase tracking-wide text-ink-faint">{t("量子 tier-2")}</div>
+              <RouteLine names={Q.tier2_route} tone="text-good" />
+            </div>
+          )}
+        </div>
+        {Q.feasible_rate === 0 && (
+          <Caveat>{t("此實例的量子採樣沒有抽到任何可行態(105 個實例中有 10 個如此)—— 誠實列出,不遮醜。tier-2 結果來自後處理管線。")}</Caveat>
+        )}
+        <Caveat>
+          {t("tier-1 / tier-2 為平台管線的兩階段輸出(定義以證據 job 為準,待上游文件補充);近似比 = 該實例古典最優 cost ÷ 量子解 cost。")}
+        </Caveat>
+      </Card>
+
+      <Card title={t("古典 top 5")} subtitle={t("窮舉 {n} 條可行路徑後的排行", { n: inst.n_feasible_paths })}>
+        <ol>
+          {inst.classical_top5.map((c, i) => (
+            <li key={i} className={`flex items-start gap-3 py-1.5 ${i > 0 ? "border-t border-border" : ""}`}>
+              <span className={`w-4 shrink-0 font-mono text-xs ${i === 0 ? "text-gold" : "text-ink-faint"}`}>{i + 1}</span>
+              <span className="min-w-0 flex-1"><RouteLine names={c.route} tone={i === 0 ? "text-gold" : "text-ink"} /></span>
+              <span className={`shrink-0 font-mono text-xs tabular-nums ${i === 0 ? "font-bold text-gold" : "text-ink-dim"}`}>
+                {c.cost.toFixed(4)}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </Card>
+
+      <Card
+        title={t("量子採樣到的可行航線")}
+        subtitle={t("q_count = 該航線在量子採樣中出現的次數")}
+        right={<Chip label={`job ${inst.evidence_job}`} tone="faint" />}
+      >
+        {Q.q_routes.length === 0 ? (
+          <p className="py-6 text-center text-sm text-bad">{t("此實例未採樣到可行態")}</p>
+        ) : (
+          <ol>
+            {Q.q_routes.map((q, i) => (
+              <li key={i} className={`flex items-start gap-3 py-1.5 ${i > 0 ? "border-t border-border" : ""}`}>
+                <span className="min-w-0 flex-1"><RouteLine names={q.route} /></span>
+                <Chip label={`×${q.q_count}`} tone="quantum" />
+              </li>
+            ))}
+          </ol>
+        )}
+      </Card>
+
+      <Card title={t("口徑與出處")} subtitle={t("整批資料的誠實聲明,原文照錄")} className="xl:col-span-2">
+        <dl className="space-y-2">
+          <div>
+            <dt className="text-[10px] uppercase tracking-wide text-ink-faint">convention</dt>
+            <dd className="font-mono text-[11px] leading-relaxed text-ink-dim">{v2.convention}</dd>
+          </div>
+          <div>
+            <dt className="text-[10px] uppercase tracking-wide text-ink-faint">disclaimer</dt>
+            <dd className="font-mono text-[11px] leading-relaxed text-ink-dim">{v2.disclaimer}</dd>
+          </div>
+          {Object.entries(v2.hazard_sources).map(([h, src]) => (
+            <div key={h}>
+              <dt className="text-[10px] uppercase tracking-wide text-ink-faint">{t(HAZ_LABEL[h])}</dt>
+              <dd className="font-mono text-[11px] leading-relaxed text-ink-dim">{src}</dd>
+            </div>
+          ))}
+        </dl>
+        <Prose>
+          {t("105 個實例各自對應一個平台 job(7956384–7956556),逐實例可稽核。無雜訊古典態向量模擬、非量子硬體、不宣稱量子優勢 —— 資料自帶的聲明,本站照錄。產生時間:{d}。", { d: v2.generated })}
+        </Prose>
+        <Caveat>
+          {t("本分頁為平台實測結果瀏覽器:QUBO 輸入(邊分數)留在平台上,瀏覽器不做重算。與「地圖/排行/演算法」分頁的 16q 即時引擎是兩套體系。")}
+        </Caveat>
+      </Card>
+    </div>
+  );
+}

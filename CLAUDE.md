@@ -98,6 +98,14 @@ score_e = haversine(o,d)/20000 + λ·port_risk[dest]/max + |N(0,0.03)|market
 
 `verify:i18n` 掃全部元件的 `t("…")` + 資料檔字串,斷言:每個 key 有 EN 條目、佔位符翻譯後仍在、字典無孤兒條目。**新增任何 UI 文字都要包 `t()` 並補字典,verify 會擋。**
 
+### 30 港分頁(app_data_v2.json,平台實測瀏覽器)
+
+v2 戰役:**30 港(TEU top-30)、15 走廊 × 7 災害組合 = 105 個平台實例**(30–33 qubits,job 7956384–7956556 逐實例可稽核)。資料含古典 top5、量子 tier1/tier2 ratio + 路線、feasible_rate、量子採樣航線。**播放型分頁** —— QUBO 輸入留在平台,瀏覽器不重算;地圖為 panel 內建的 30 港投影(與九港 WorldMap 分開)。
+
+口徑(資料自帶,UI 照錄):cost 為 per-instance offset 的 full-QUBO 能量,**跨實例不可比**;無雜訊古典態向量模擬、不宣稱量子優勢。10 個實例 feasible_rate=0,誠實展示。**tier-1/tier-2 精確定義待上游文件補充**,UI 已標註。最強敘事:Busan→Hamburg 戰爭情境從蘇伊士線整條翻到跨太平洋+北美陸橋。
+
+`verify:v2`:105 實例網格完整、路線起終點與港口合法、top5 升冪、ratio ∈ (0.99,1]、feasible_rate 0 ⟺ 空採樣、job 唯一。
+
 ### 0.9281 聯運分頁(showcase.json + showcase_network.json)
 
 「聯運」分頁有兩層資料:`showcase.json`(8 mode-edge,手抄自 `q9_benchmark_champion_colab_ok.ipynb` cells 12/14)與 `showcase_network.json`(9 港/64 pair/256 mode-edge 全網路,`tools/extract_showcase_network.py` 從 graph_q9 artifacts 抽取,`npm run precompute:showcase` 重生)。兩層由 verify:showcase 互相對帳(手抄 8 邊 vs CSV ≤1e-6)。
@@ -129,7 +137,8 @@ npm run verify     # engine + risk + algos + typecheck
 
 - `verify:engine` — TS 求解器 vs Python 預算結果,**137 個 penalty 掃描點逐點比對**(不是只比端點),含可行性轉折、勝出航線、作弊態計數;另掃 **72 組起終點**與推導 rhs 對帳;score 拆解:λ=0.4 重組 ≤1e-12、16 個 market 殘差全在 [0, 0.12]
 - `verify:risk` — vs 報告發表的四條航線平均值與 CVaR95,含 46% 比值斷言;災害升級三斷言:空集合 bit-identical、只影響過港航線、closed-form 與模擬 <5% 吻合;**vs port_hazards_v2.json 原始檔**:擬合 7.4979 vs 原始 7.5、0.7934 vs 0.792、9 港逐欄一致(原始檔 λ 隱含 11.500 年目錄,擬合 11.504)
-- `verify:i18n` — i18n 完整性:339 個 key 在 EN 與 JA 字典全有條目、佔位符存活、無孤兒
+- `verify:v2` — v2 平台資料一致性(見「30 港分頁」節)
+- `verify:i18n` — i18n 完整性:全部 key(364)在 EN 與 JA 字典有條目、佔位符存活、無孤兒
 - `verify:showcase` — 聯運分頁雙層對帳:手抄 8 邊分項加總與 16 組合排行 vs 官方前 12 名;全網路 256 邊分項加總、6 條走廊分數重算、手抄 vs CSV 逐位(≤1e-6)、Rank 1 = 0.928146
 - `verify:algos` — 檢查**行為**而非數字:振幅峰值是否落在理論位置、過轉是否真的損失機率、GAS 是否在多數種子命中、**是否曾宣稱低於真實最優**、QAOA 收斂是否單調
 
@@ -241,7 +250,7 @@ tools/precompute.py       離線產生資料包(讀上游 repo)
 tools/verify_engine.ts    QUBO 對帳(137 點掃描)
 tools/verify_risk.ts      蒙地卡羅對帳(四條航線)
 tools/verify_algos.ts     Grover / QAOA / SA 行為檢查
-src/data/q9_data/         打包進建置的資料(12 個 JSON;showcase* 來自 Colab bundle,port_hazards_v2 來自證據包)
+src/data/q9_data/         打包進建置的資料(13 個 JSON;showcase* 來自 Colab bundle,port_hazards_v2 來自證據包,app_data_v2 = 30 港平台戰役)
 tools/extract_showcase_network.py  從 graph_q9 抽 0.9281 全網路(含權重比值斷言)
 src/data/index.ts         型別化存取 + 格式化函式 + CRITICAL_A
 src/engine/model.ts       QUBO 求解、航線解碼、能量直方圖
@@ -252,7 +261,7 @@ src/lib/store.ts          共用參數 context;model 依起終點快取;兩個�
 src/components/ui.tsx     Card / Stat / Chip / Slider / Toggle / Caveat
 src/components/charts.tsx Histogram / SweepChart / TailChart / LineChart / Bar / QubitScale
 src/components/WorldMap   等距投影,跨換日線的航段會斷成兩段
-src/components/panels/    七個分頁(含「聯運」= 0.9281 showcase)
+src/components/panels/    八個分頁(「聯運」= 0.9281 showcase、「30港」= v2 平台實測)
 src/components/Dashboard  外殼:桌機側欄常駐,lg 以下收成抽屜
 ```
 

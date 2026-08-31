@@ -19,6 +19,7 @@ import result40Json from "./q9_data/result_40q.json";
 import showcaseJson from "./q9_data/showcase.json";
 import hazardsV2Json from "./q9_data/port_hazards_v2.json";
 import showcaseNetworkJson from "./q9_data/showcase_network.json";
+import v2Json from "./q9_data/app_data_v2.json";
 
 export const meta = metaJson as Meta & {
   problem_name: string;
@@ -142,6 +143,35 @@ export const showcaseNetwork = showcaseNetworkJson as {
   nodes: { port: string; country: string; iso3: string }[];
   edges: ShowcaseEdge[];
   corridor_paths: { rank: number; path: string[]; pairs: string[]; score: number }[];
+};
+
+export interface V2Instance {
+  source: string;
+  target: string;
+  hazards: string[];
+  qubits: number;
+  classical_top5: { route: string[]; cost: number }[];
+  quantum: {
+    tier1_ratio: number | null;
+    tier1_route: string[] | null;
+    tier2_ratio: number | null;
+    tier2_route: string[] | null;
+    feasible_rate: number;
+    q_routes: { route: string[]; q_count: number }[];
+  };
+  n_feasible_paths: number;
+  evidence_job: string;
+}
+
+/** The v2 platform campaign: 30 ports, 15 corridors × 7 hazard sets, 105 jobs. */
+export const v2 = v2Json as {
+  version: string;
+  generated: string;
+  convention: string;
+  disclaimer: string;
+  ports: { [name: string]: { lat: number; lon: number; region: string; teu_rank_2024: number } };
+  hazard_sources: { [hazard: string]: string };
+  instances: V2Instance[];
 };
 
 export interface HazardSource {

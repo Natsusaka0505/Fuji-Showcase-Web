@@ -419,4 +419,39 @@ export const EN: Record<string, string> = {
   "基準情境": "Base scenario",
   "鹿特丹港衝擊": "Rotterdam port shock",
   "天氣衝擊": "Weather shock",
+
+  // v2 platform campaign panel
+  "30 港平台實測": "30-port platform campaign",
+  "TEU 前 30 大港｜15 走廊 × 7 災害組合 = 105 個 30–33 qubit 平台實例":
+    "Top-30 TEU ports | 15 corridors × 7 hazard sets = 105 platform instances at 30–33 qubits",
+  "30 港航線網路圖": "30-port route network",
+  "古典最優": "classical optimum",
+  "量子 tier-1": "quantum tier-1",
+  "量子 tier-2": "quantum tier-2",
+  "切換災害組合看路線翻轉:Busan → Hamburg 在地震情境走 Mundra 線、颱風情境走馬六甲線、戰爭情境(蘇伊士/紅海封鎖)整條翻到跨太平洋 + 北美陸橋。這批是富士通 1024 節點 FX700 平台的實測結果 —— 不是本站瀏覽器模擬。":
+    "Flip the hazard set and watch the route flip: Busan → Hamburg goes via Mundra under earthquakes, via the Malacca line under typhoons, and under war (Suez/Red Sea closure) swings entirely trans-Pacific onto the North-American land bridge. These are measured results from Fujitsu's 1024-node FX700 platform — not this site's browser simulation.",
+  "量子 vs 古典": "Quantum vs classical",
+  "同一實例內對比;cost 為 full-QUBO 能量,跨實例不可比":
+    "Compared within one instance; costs are full-QUBO energies and are never comparable across instances",
+  "命中古典最優": "Hit classical optimum",
+  "tier-1 近似比": "tier-1 ratio",
+  "tier-2 近似比": "tier-2 ratio",
+  "可行採樣率": "Feasible sample rate",
+  "此實例的量子採樣沒有抽到任何可行態(105 個實例中有 10 個如此)—— 誠實列出,不遮醜。tier-2 結果來自後處理管線。":
+    "This instance's quantum sampling drew no feasible state at all (10 of the 105 instances did) — listed honestly, warts and all. The tier-2 result comes from the post-processing pipeline.",
+  "tier-1 / tier-2 為平台管線的兩階段輸出(定義以證據 job 為準,待上游文件補充);近似比 = 該實例古典最優 cost ÷ 量子解 cost。":
+    "tier-1 / tier-2 are the two stages of the platform pipeline's output (definitions per the evidence jobs, upstream documentation pending); ratio = this instance's classical optimum cost ÷ the quantum solution's cost.",
+  "古典 top 5": "Classical top 5",
+  "窮舉 {n} 條可行路徑後的排行": "Ranking after enumerating {n} feasible paths",
+  "量子採樣到的可行航線": "Feasible routes the quantum sampler drew",
+  "q_count = 該航線在量子採樣中出現的次數":
+    "q_count = how many times the route appeared in the quantum samples",
+  "此實例未採樣到可行態": "No feasible state sampled for this instance",
+  "口徑與出處": "Framing and provenance",
+  "整批資料的誠實聲明,原文照錄": "The dataset's own honesty statements, quoted verbatim",
+  "105 個實例各自對應一個平台 job(7956384–7956556),逐實例可稽核。無雜訊古典態向量模擬、非量子硬體、不宣稱量子優勢 —— 資料自帶的聲明,本站照錄。產生時間:{d}。":
+    "Each of the 105 instances maps to its own platform job (7956384–7956556), auditable one by one. Noise-free classical statevector simulation, no quantum hardware, no quantum-advantage claim — the dataset's own statement, quoted here. Generated: {d}.",
+  "本分頁為平台實測結果瀏覽器:QUBO 輸入(邊分數)留在平台上,瀏覽器不做重算。與「地圖/排行/演算法」分頁的 16q 即時引擎是兩套體系。":
+    "This tab is a browser for measured platform results: the QUBO inputs (edge scores) stayed on the cluster, so nothing recomputes here. A separate system from the live 16q engine behind the Map/Ranking/Algorithms tabs.",
+  "30港": "30 Ports",
 };

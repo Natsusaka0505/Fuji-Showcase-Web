@@ -20,6 +20,7 @@ import { AlgoPanel } from "@/components/panels/AlgoPanel";
 import { QuantumPanel } from "@/components/panels/QuantumPanel";
 import { AuditPanel } from "@/components/panels/AuditPanel";
 import { ShowcasePanel } from "@/components/panels/ShowcasePanel";
+import { V2Panel } from "@/components/panels/V2Panel";
 import { meta, edgeData, ports, CRITICAL_A, fmtUsd } from "@/data";
 
 const TABS = [
@@ -28,6 +29,7 @@ const TABS = [
   { key: "algo", label: "演算法", Panel: AlgoPanel },
   { key: "risk", label: "風險", Panel: RiskPanel },
   { key: "modal", label: "聯運", Panel: ShowcasePanel },
+  { key: "v2", label: "30港", Panel: V2Panel },
   { key: "q40", label: "40q", Panel: QuantumPanel },
   { key: "audit", label: "稽核", Panel: AuditPanel },
 ] as const;
