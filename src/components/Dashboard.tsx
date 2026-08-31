@@ -160,7 +160,7 @@ function ParamColumn() {
         }
       />
       <Slider
-        label={t("每日延誤成本")}
+        label={t("每日延誤成本(estimate)")}
         value={params.risk.dailyDelayCostUsd}
         min={50000}
         max={600000}
@@ -173,7 +173,7 @@ function ParamColumn() {
         label={t("荷莫茲海峽封鎖")}
         value={params.risk.hormuzBlockade}
         onChange={(v) => setRisk({ hormuzBlockade: v })}
-        hint={t("繞好望角 +12 天")}
+        hint={t("繞好望角 +12 天(estimate)")}
       />
       {params.blockedPorts.length > 0 && (
         <div className="mt-4 border-t border-border pt-3">

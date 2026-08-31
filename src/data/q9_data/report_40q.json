@@ -1,0 +1,77 @@
+{
+  "provenance": "Transcribed from the written report (§5.1 and Figure 2). Job IDs are the platform's; the figures here are not re-derived from a platform export, so verify_report_40q only checks internal consistency.",
+  "flagship": {
+    "job": "7953691",
+    "title_zh": "40 qubit QAOA 旗艦實驗",
+    "source": "Singapore",
+    "target": "Los Angeles",
+    "qubits": 40,
+    "edges": 40,
+    "nodes": 1024,
+    "shots": 65536,
+    "optimum_hits": 884,
+    "share_of_feasible": 0.811,
+    "report_section": "§5.1",
+    "scenarios": [
+      {
+        "name_zh": "基準情境",
+        "job": "7953691",
+        "route_changed": false,
+        "gap": 0
+      },
+      {
+        "name_zh": "直航停航",
+        "job": "7954111",
+        "route_changed": true,
+        "gap": 0
+      },
+      {
+        "name_zh": "加高雄封港",
+        "job": "7954358",
+        "route_changed": true,
+        "gap": 0
+      },
+      {
+        "name_zh": "加紅海中斷",
+        "job": "7954112",
+        "route_changed": true,
+        "gap": 0
+      }
+    ],
+    "hits_tier": "tier1"
+  },
+  "flip": {
+    "job": "7955798",
+    "figure": "Figure 2",
+    "source": "Shanghai",
+    "target": "Rotterdam",
+    "qubits": 40,
+    "war_penalty_note_zh": "戰爭權重 = 10 天等效延誤,以蘇伊士運河 2024 年通行紀錄校準",
+    "calibration": "SCA 2024 transit records",
+    "off": {
+      "label_zh": "戰爭風險項關閉",
+      "corridor_zh": "可倫坡 / 蘇伊士走廊",
+      "route": [
+        "Shanghai",
+        "Taicang",
+        "Colombo",
+        "Rotterdam"
+      ]
+    },
+    "on": {
+      "label_zh": "戰爭風險項開啟",
+      "corridor_zh": "跨太平洋經巴拿馬",
+      "route": [
+        "Shanghai",
+        "Los Angeles",
+        "New York/New Jersey",
+        "Antwerp",
+        "Rotterdam"
+      ]
+    },
+    "tier1_ratio": 0.999818,
+    "tier2_ratio": 0.999985,
+    "ratio_note": "Job-level ratios as reported; the source does not attribute them to the war-on or war-off scenario individually, so they are shown unattributed."
+  },
+  "tier_note": "tier-1 = pure quantum sampling; tier-2 = hybrid after classical repair. The flagship's 884 optimum hits are tier-1 draws."
+}

@@ -33,9 +33,7 @@ export const EN: Record<string, string> = {
     "score = distance + λ·destination risk + market term | shipped at 0.40; formula reconciled edge-by-edge with the upstream build_ising_40q.py",
   "非出貨 λ = 衍生能量地貌;−97.4936 等已發表數字不適用":
     "Non-default λ = a derived landscape; published figures such as −97.4936 do not apply",
-  "每日延誤成本": "Daily delay cost",
   "荷莫茲海峽封鎖": "Strait of Hormuz blockade",
-  "繞好望角 +12 天": "+12 days around the Cape of Good Hope",
   "已封鎖 {n} 港": "{n} ports blocked",
   "全部運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)並重跑 10,000 次蒙地卡羅情境(~2 ms)。":
     "Everything recomputes live in your browser: each adjustment re-sweeps all 65,536 quantum states (~0.5 ms) and reruns 10,000 Monte Carlo scenarios (~2 ms).",
@@ -260,7 +258,6 @@ export const EN: Record<string, string> = {
   "USGS 地震年率的縮放": "Scales the USGS annual quake rate",
   "情境數": "Scenarios",
   "越多越穩定;50,000 仍在 10 ms 內": "More is steadier; 50,000 still runs under 10 ms",
-  "繞好望角 +12 天;2026-02 事實封鎖情境": "+12 days around the Cape; the de-facto blockade scenario of 2026-02",
   "模型結構由報告的四條航線 CVaR 表回歸還原:平均延誤誤差 0.15%,尾部形狀以 2 個參數擬合、RMS {r}%。每日延誤成本為 estimate 級,非官方統計。":
     "The model structure was regression-recovered from the report's four-route CVaR table: mean delay error 0.15%, tail shape fitted with 2 parameters at RMS {r}%. The daily delay cost is estimate-grade, not an official statistic.",
   "災害情境": "Disaster scenarios",
@@ -294,7 +291,6 @@ export const EN: Record<string, string> = {
   "瓶頸:iQFT 全域 all-to-all 閘": "Bottleneck: global all-to-all iQFT gates",
   "~100 s/閘": "~100 s/gate",
   "尾段速率": "Tail-phase rate",
-  "40-qubit 規模里程碑": "The 40-qubit scale milestone",
   "總 qubits": "Total qubits",
   "MPI 行程": "MPI processes",
   "單輪牆鐘": "Wall-clock/round",
@@ -473,4 +469,96 @@ export const EN: Record<string, string> = {
     "None",
   "tier-1 = 純量子抽樣的最佳合法航線;tier-2 = 量子抽樣再經古典修補的 hybrid 結果,兩者分開列示,不併入同一排行。近似比 = 該實例古典最優 cost ÷ 該解 cost,1.0 表示命中古典精確解。":
     "tier-1 is the best feasible route pure-quantum sampling returned; tier-2 is the hybrid result after classical repair. They are listed separately and never merged into one ranking. The ratio is the instance's classical optimum cost divided by that solution's cost, so 1.0 means it matched the exact classical answer.",
+
+  // estimate-grade cost figures
+  "每日延誤成本(estimate)":
+    "Daily delay cost (estimate)",
+  "繞好望角 +12 天(estimate)":
+    "+12 days round the Cape (estimate)",
+  "繞好望角 +12 天(estimate);2026-02 事實封鎖情境":
+    "+12 days round the Cape (estimate); the Feb 2026 de-facto closure scenario",
+  "成本怎麼算出來的":
+    "How the cost is derived",
+  "所有金額皆為 estimate 級,非官方統計":
+    "Every currency figure is estimate-grade, not an official statistic",
+  "船型基準":
+    "Vessel basis",
+  "20,000 TEU 貨櫃輪":
+    "20,000 TEU container ship",
+  "租船營運":
+    "Charter and operations",
+  "約 每日 15 萬美元":
+    "~USD 150k per day",
+  "貨物庫存持有":
+    "Cargo inventory holding",
+  "約 每日 11 萬美元":
+    "~USD 110k per day",
+  "合計 每延誤一天":
+    "Total per delayed day",
+  "約 26.7 萬美元 — 本站滑桿預設值":
+    "~USD 267k — the slider default here",
+  "來源":
+    "Source",
+  "Drewry / Alphaliner 產業基準推算":
+    "Derived from Drewry / Alphaliner industry benchmarks",
+  "模型只把「延誤天數」換算成金額,不含運價、保費、違約金或商譽損失。荷莫茲封鎖的「繞好望角 +12 天」同樣是情境假設,不是觀測值 —— 兩者都標":
+    "The model converts delay days into money and nothing else: no freight rates, insurance premiums, penalties or reputational loss. The Hormuz blockade's \"+12 days round the Cape\" is likewise a modelled scenario rather than an observation — both are marked",
+  "。跨實例的量子成本(cost)是 full-QUBO 能量,與這裡的美金無關、不可換算。":
+    ". The quantum cost figures elsewhere are full-QUBO energies; they are unrelated to these dollars and cannot be converted into them.",
+
+  // 40q report headlines: flagship scenarios + Figure 2 flip
+  "40q QAOA 旗艦實驗":
+    "40q QAOA flagship run",
+  "{s} → {tg}｜{e} 條航段｜{n} 節點｜報告 {sec}":
+    "{s} → {tg} | {e} legs | {n} nodes | report {sec}",
+  "qubits":
+    "qubits",
+  "抽樣次數":
+    "Shots",
+  "抽中最佳解":
+    "Optimum drawn",
+  "次":
+    "times",
+  "佔合法樣本":
+    "Share of feasible samples",
+  "以上為 tier-1 純量子抽樣":
+    "All of the above is tier-1 pure-quantum sampling",
+  "情境":
+    "Scenario",
+  "推薦航線是否改變":
+    "Recommended route changed",
+  "與精確解差距":
+    "Gap to exact",
+  "改變":
+    "Changed",
+  "基準":
+    "Baseline",
+  "四個情境的抽樣最佳解全部等於窮舉驗證的精確解,差距為 0;而推薦航線每次都隨風險改變。這說明 40 qubit 不只是「跑得動」,而是「答案正確、且會隨情境變動」。":
+    "In all four scenarios the best sampled solution equals the brute-force-verified exact optimum, a gap of zero — and the recommended route changes every time the risk does. So 40 qubits is not merely running: the answers are correct and they respond to the scenario.",
+  "戰爭風險一開,航線就翻轉":
+    "Turn the war risk on and the route flips",
+  "{s} → {tg}｜{q} qubits｜報告 {f}":
+    "{s} → {tg} | {q} qubits | report {f}",
+  "戰爭風險項關閉":
+    "War-risk term off",
+  "戰爭風險項開啟":
+    "War-risk term on",
+  "戰爭風險項關閉時,最佳航線走可倫坡 / 蘇伊士走廊;開啟後整條翻到跨太平洋經洛杉磯、紐約、安特衛普。權重不是憑空設的 —— 以蘇伊士運河 2024 年通行量崩跌校準,等效 10 天延誤。這重現了 2024 年航運業真實的改道決策。":
+    "With the war-risk term off, the optimal route runs through the Colombo / Suez corridor; switch it on and the whole thing flips trans-Pacific via Los Angeles, New York and Antwerp. The weight is not invented — it is calibrated on the 2024 collapse in Suez Canal transits, equivalent to a 10-day delay. This reproduces the rerouting the shipping industry actually did in 2024.",
+  "兩個近似比為該 job 的整體數值,報告未分別歸屬給「開」或「關」情境,故不作歸屬標示。":
+    "Both ratios are job-level figures. The report does not attribute them to the on or off scenario individually, so neither is claimed here.",
+  "40-qubit 規模里程碑(七月 Grover,誠實保留的失敗案例)":
+    "40-qubit scale milestone (July Grover — the failure, kept on purpose)",
+  "可倫坡 / 蘇伊士走廊":
+    "Colombo / Suez corridor",
+  "跨太平洋經巴拿馬":
+    "Trans-Pacific via Panama",
+  "基準情境":
+    "Baseline scenario",
+  "直航停航":
+    "Direct service suspended",
+  "加高雄封港":
+    "plus Kaohsiung port closure",
+  "加紅海中斷":
+    "plus Red Sea disruption",
 };

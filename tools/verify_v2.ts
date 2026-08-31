@@ -12,7 +12,26 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DATA = join(dirname(fileURLToPath(import.meta.url)), "../src/data/q9_data");
-const v2 = JSON.parse(readFileSync(join(DATA, "app_data_v2.json"), "utf8"));
+interface Instance {
+  source: string;
+  target: string;
+  hazards: string[];
+  qubits: number;
+  classical_top5: { route: string[]; cost: number }[];
+  quantum: {
+    tier1_ratio: number | null;
+    tier1_route: string[] | null;
+    tier2_ratio: number | null;
+    tier2_route: string[] | null;
+    feasible_rate: number;
+    q_routes: { route: string[]; q_count: number }[];
+  };
+  n_feasible_paths: number;
+  evidence_job: string;
+}
+
+const v2: { ports: Record<string, unknown>; instances: Instance[] } =
+  JSON.parse(readFileSync(join(DATA, "app_data_v2.json"), "utf8"));
 
 let failures = 0;
 const check = (name: string, ok: boolean, detail = "") => {

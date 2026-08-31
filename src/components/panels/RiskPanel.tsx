@@ -1,7 +1,7 @@
 "use client";
 
 import { TailChart, Bar } from "@/components/charts";
-import { Card, Stat, Chip, Route, Slider, Toggle, Caveat, Prose } from "@/components/ui";
+import { Card, Stat, Chip, Route, Slider, Toggle, Caveat, Prose, Est } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import { cvar, fmtUsd, ports } from "@/data";
@@ -27,8 +27,8 @@ export function RiskPanel() {
           <Route iso={solution.bestClean.routeIso} className="mb-3" />
           <TailChart samples={routeRisk.samples} cvar={routeRisk.cvarUsd} mean={routeRisk.meanUsd} />
           <div className="mt-2 flex gap-3">
-            <Stat label={t("平均成本")} value={fmtUsd(routeRisk.meanUsd)} tone="gold" />
-            <Stat label="CVaR" value={fmtUsd(routeRisk.cvarUsd)} tone="bad" />
+            <Stat label={t("平均成本")} value={fmtUsd(routeRisk.meanUsd)} tone="gold" est />
+            <Stat label="CVaR" value={fmtUsd(routeRisk.cvarUsd)} tone="bad" est />
             <Stat label={t("平均延誤")} value={routeRisk.meanDelayDays.toFixed(2)} unit={t("天")} />
           </div>
           <Prose>
@@ -62,9 +62,38 @@ export function RiskPanel() {
         </Prose>
       </Card>
 
+      <Card
+        title={t("成本怎麼算出來的")}
+        subtitle={t("所有金額皆為 estimate 級,非官方統計")}
+        right={<Chip label="estimate" tone="warn" />}
+        className="xl:col-span-2"
+      >
+        <ol className="space-y-2">
+          {[
+            [t("船型基準"), t("20,000 TEU 貨櫃輪")],
+            [t("租船營運"), t("約 每日 15 萬美元")],
+            [t("貨物庫存持有"), t("約 每日 11 萬美元")],
+            [t("合計 每延誤一天"), t("約 26.7 萬美元 — 本站滑桿預設值")],
+            [t("來源"), t("Drewry / Alphaliner 產業基準推算")],
+          ].map(([k, v], i, arr) => (
+            <li key={k} className={`flex items-baseline justify-between gap-3 ${i > 0 ? "border-t border-border pt-2" : ""}`}>
+              <span className="text-xs text-ink-dim">{k}</span>
+              <span className={`shrink-0 font-mono text-xs tabular-nums ${i === arr.length - 2 ? "font-bold text-gold" : "text-ink"}`}>
+                {v}
+              </span>
+            </li>
+          ))}
+        </ol>
+        <Prose>
+          {t("模型只把「延誤天數」換算成金額,不含運價、保費、違約金或商譽損失。荷莫茲封鎖的「繞好望角 +12 天」同樣是情境假設,不是觀測值 —— 兩者都標")}
+          <Est />
+          {t("。跨實例的量子成本(cost)是 full-QUBO 能量,與這裡的美金無關、不可換算。")}
+        </Prose>
+      </Card>
+
       <Card title={t("風險參數")} subtitle={t("調整後上方圖表即時更新")} className="xl:col-span-2">
         <div className="grid gap-x-8 md:grid-cols-2 xl:grid-cols-3">
-          <Slider label={t("每日延誤成本")} value={R.dailyDelayCostUsd} min={50000} max={600000} step={1000}
+          <Slider label={t("每日延誤成本(estimate)")} value={R.dailyDelayCostUsd} min={50000} max={600000} step={1000}
             onChange={(v) => setRisk({ dailyDelayCostUsd: v })} format={fmtUsd}
             hint={t("20,000 TEU 貨櫃輪;Drewry/Alphaliner 推算,estimate 級")} />
           <Slider label={t("航程窗口")} value={R.horizonDays} min={7} max={90} step={1}
@@ -88,7 +117,7 @@ export function RiskPanel() {
           <div className="self-end">
             <Toggle label={t("荷莫茲海峽封鎖")} value={R.hormuzBlockade}
               onChange={(v) => setRisk({ hormuzBlockade: v })}
-              hint={t("繞好望角 +12 天;2026-02 事實封鎖情境")} />
+              hint={t("繞好望角 +12 天(estimate);2026-02 事實封鎖情境")} />
           </div>
         </div>
         <Caveat>

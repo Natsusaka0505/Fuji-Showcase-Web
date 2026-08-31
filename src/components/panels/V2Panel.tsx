@@ -14,6 +14,7 @@ import { useMemo, useState } from "react";
 import { Card, Stat, Chip, Caveat, Prose, Mono } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 import { v2, type V2Instance } from "@/data";
+import { LandLayer } from "@/components/LandLayer";
 
 const MAP_W = 360;
 const MAP_H = 190;
@@ -153,6 +154,7 @@ export function V2Panel() {
 
         <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="w-full" role="img" aria-label={t("30 港航線網路圖")}>
           <rect x={0} y={0} width={MAP_W} height={MAP_H} rx={8} fill="var(--color-bg)" />
+          <LandLayer project={project} width={MAP_W} opacity={0.85} />
           {[1, 2, 3].map((i) => (
             <line key={`h${i}`} x1={0} y1={(MAP_H / 4) * i} x2={MAP_W} y2={(MAP_H / 4) * i}
               stroke="var(--color-grid)" strokeWidth={0.5} />

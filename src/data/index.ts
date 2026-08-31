@@ -16,6 +16,7 @@ import cvarJson from "./q9_data/cvar.json";
 import algoJson from "./q9_data/algo_compare.json";
 import auditJson from "./q9_data/audit.json";
 import result40Json from "./q9_data/result_40q.json";
+import report40Json from "./q9_data/report_40q.json";
 import showcaseJson from "./q9_data/showcase.json";
 import hazardsV2Json from "./q9_data/port_hazards_v2.json";
 import showcaseNetworkJson from "./q9_data/showcase_network.json";
@@ -210,5 +211,29 @@ export const fmtUsd = (v: number) =>
 export const fmtCost = (v: number) => (Number.isFinite(v) ? v.toFixed(4) : "—");
 
 export const fmtHours = (sec: number) => `${(sec / 3600).toFixed(1)} h`;
+
+/**
+ * The written report's own 40-qubit headlines, transcribed rather than derived:
+ * the §5.1 flagship QAOA run with its three perturbation scenarios, and the
+ * Figure 2 route flip. Job ids are the platform's.
+ */
+export const report40 = report40Json as {
+  provenance: string;
+  tier_note: string;
+  flagship: {
+    job: string; title_zh: string; source: string; target: string;
+    qubits: number; edges: number; nodes: number; shots: number;
+    optimum_hits: number; share_of_feasible: number; report_section: string;
+    hits_tier: string;
+    scenarios: { name_zh: string; job: string; route_changed: boolean; gap: number }[];
+  };
+  flip: {
+    job: string; figure: string; source: string; target: string; qubits: number;
+    war_penalty_note_zh: string; calibration: string;
+    tier1_ratio: number; tier2_ratio: number; ratio_note: string;
+    off: { label_zh: string; corridor_zh: string; route: string[] };
+    on: { label_zh: string; corridor_zh: string; route: string[] };
+  };
+};
 
 export type { Port };

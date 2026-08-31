@@ -1,16 +1,20 @@
 /**
- * The 40-qubit run.
+ * The 40-qubit results.
  *
- * Nothing here is recomputed: 2^40 is a 16 TiB statevector, so this panel plays
- * back the one completed run (job 7951873) and is explicit that the scale claim
- * and the optimisation claim are different claims.
+ * Nothing here is recomputed — 2^40 is a 16 TiB statevector — so this panel
+ * plays back platform runs and keeps their claims apart. The August QAOA
+ * flagship and the Figure 2 route flip are the report's actual 40q headlines;
+ * the July Grover run is kept because it failed, and showing that honestly is
+ * worth more than hiding it.
  */
 "use client";
 
 import { QubitScale } from "@/components/charts";
 import { Card, Stat, Chip, Route, Caveat, Prose, Mono } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
-import { result40, solutions, fmtHours } from "@/data";
+import { RouteFlipMap } from "@/components/RouteFlipMap";
+import { useState } from "react";
+import { result40, report40, solutions, fmtHours } from "@/data";
 
 const ISO: Record<string, string> = {
   Singapore: "SIN",
@@ -21,6 +25,9 @@ const ISO: Record<string, string> = {
 
 export function QuantumPanel() {
   const { t } = useI18n();
+  const [warOn, setWarOn] = useState(true);
+  const F = report40.flagship;
+  const P = report40.flip;
 
   const scaleRows = [
     ["qubits", "16", `${result40.total_qubits}（16 key + 24 val）`],
@@ -42,7 +49,88 @@ export function QuantumPanel() {
   return (
     <div className="grid gap-4 xl:grid-cols-2">
       <Card
-        title={t("40-qubit 規模里程碑")}
+        title={t("40q QAOA 旗艦實驗")}
+        subtitle={t("{s} → {tg}｜{e} 條航段｜{n} 節點｜報告 {sec}", {
+          s: F.source, tg: F.target, e: String(F.edges), n: String(F.nodes), sec: F.report_section })}
+        right={<Chip label={`job ${F.job}`} tone="quantum" />}
+        className="xl:col-span-2"
+      >
+        <div className="flex flex-wrap gap-3">
+          <Stat label={t("qubits")} value={String(F.qubits)} tone="gold" />
+          <Stat label={t("抽樣次數")} value={F.shots.toLocaleString()} />
+          <Stat label={t("抽中最佳解")} value={F.optimum_hits.toLocaleString()} unit={t("次")} tone="good" />
+          <Stat label={t("佔合法樣本")} value={`${(F.share_of_feasible * 100).toFixed(1)}%`} tone="good" />
+        </div>
+        <Chip label={t("以上為 tier-1 純量子抽樣")} tone="quantum" />
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[420px] text-left">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-wide text-ink-faint">
+                <th className="pb-1 font-normal">{t("情境")}</th>
+                <th className="pb-1 font-normal">{t("推薦航線是否改變")}</th>
+                <th className="pb-1 text-right font-normal">{t("與精確解差距")}</th>
+                <th className="pb-1 pl-3 text-right font-normal">job</th>
+              </tr>
+            </thead>
+            <tbody>
+              {F.scenarios.map((sc) => (
+                <tr key={sc.job} className="border-t border-border">
+                  <td className="py-1.5 text-xs text-ink">{t(sc.name_zh)}</td>
+                  <td className="py-1.5">
+                    {sc.route_changed
+                      ? <Chip label={t("改變")} tone="warn" />
+                      : <span className="text-[11px] text-ink-faint">{t("基準")}</span>}
+                  </td>
+                  <td className="py-1.5 text-right font-mono text-xs tabular-nums text-good">{sc.gap}</td>
+                  <td className="py-1.5 pl-3 text-right font-mono text-[11px] text-ink-dim">{sc.job}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <Prose>
+          {t("四個情境的抽樣最佳解全部等於窮舉驗證的精確解,差距為 0;而推薦航線每次都隨風險改變。這說明 40 qubit 不只是「跑得動」,而是「答案正確、且會隨情境變動」。")}
+        </Prose>
+      </Card>
+
+      <Card
+        title={t("戰爭風險一開,航線就翻轉")}
+        subtitle={t("{s} → {tg}｜{q} qubits｜報告 {f}", {
+          s: P.source, tg: P.target, q: String(P.qubits), f: P.figure })}
+        right={<Chip label={`job ${P.job}`} tone="quantum" />}
+        className="xl:col-span-2"
+      >
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setWarOn(false)} aria-pressed={!warOn}
+            className={`rounded-full border px-3 py-1 text-xs font-bold transition-colors ${
+              !warOn ? "border-quantum bg-quantum text-bg" : "border-border text-ink-dim hover:text-ink"}`}>
+            {t("戰爭風險項關閉")}
+          </button>
+          <button type="button" onClick={() => setWarOn(true)} aria-pressed={warOn}
+            className={`rounded-full border px-3 py-1 text-xs font-bold transition-colors ${
+              warOn ? "border-bad bg-bad text-bg" : "border-border text-ink-dim hover:text-ink"}`}>
+            {t("戰爭風險項開啟")}
+          </button>
+          <span className="text-[11px] text-ink-dim">
+            {warOn ? t(P.on.corridor_zh) : t(P.off.corridor_zh)}
+          </span>
+        </div>
+        <RouteFlipMap off={P.off.route} on={P.on.route} showOn={warOn}
+          labels={{ off: t(P.off.label_zh), on: t(P.on.label_zh) }} />
+        <div className="mt-3 flex flex-wrap gap-3">
+          <Stat label={t("tier-1 純量子")} value={P.tier1_ratio.toFixed(6)} tone="quantum" />
+          <Stat label={t("tier-2 hybrid")} value={P.tier2_ratio.toFixed(6)} tone="quantum" />
+        </div>
+        <Prose>
+          {t("戰爭風險項關閉時,最佳航線走可倫坡 / 蘇伊士走廊;開啟後整條翻到跨太平洋經洛杉磯、紐約、安特衛普。權重不是憑空設的 —— 以蘇伊士運河 2024 年通行量崩跌校準,等效 10 天延誤。這重現了 2024 年航運業真實的改道決策。")}
+        </Prose>
+        <Caveat>
+          {t("兩個近似比為該 job 的整體數值,報告未分別歸屬給「開」或「關」情境,故不作歸屬標示。")}
+        </Caveat>
+      </Card>
+
+      <Card
+        title={t("40-qubit 規模里程碑(七月 Grover,誠實保留的失敗案例)")}
         subtitle={`job 7951873｜${result40.algorithm}`}
         right={<Chip label="COMPLETED" tone="good" filled />}
       >

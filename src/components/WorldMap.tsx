@@ -12,6 +12,7 @@
 
 import { memo } from "react";
 import { ports, edgeData } from "@/data";
+import { LandLayer } from "@/components/LandLayer";
 import { useI18n } from "@/lib/i18n";
 import type { RouteSolution } from "@/engine/model";
 
@@ -73,6 +74,7 @@ export const WorldMap = memo(function WorldMap({
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={t("九港航線網路圖")}>
         <rect x={0} y={0} width={W} height={H} rx={8} fill="var(--color-bg)" />
+        <LandLayer project={project} width={W} opacity={0.85} />
         {[1, 2, 3].map((i) => (
           <line key={`h${i}`} x1={0} y1={(H / 4) * i} x2={W} y2={(H / 4) * i}
             stroke="var(--color-grid)" strokeWidth={0.5} />

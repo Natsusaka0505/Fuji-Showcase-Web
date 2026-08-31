@@ -38,17 +38,22 @@ const TONE = {
 
 export type Tone = keyof typeof TONE;
 
-export function Stat({ label, value, unit, tone = "ink" }: {
+export function Stat({ label, value, unit, tone = "ink", est }: {
   label: string;
   value: string;
   unit?: string;
   tone?: Tone;
+  /** Flags the figure as estimate-grade rather than measured. */
+  est?: boolean;
 }) {
   return (
     <div className="min-w-[72px] flex-1">
       <div className="text-[10px] uppercase tracking-wide text-ink-faint">{label}</div>
       <div className="mt-0.5 flex items-baseline gap-1">
-        <span className={`font-mono text-base font-bold tabular-nums ${TONE[tone]}`}>{value}</span>
+        <span className={`font-mono text-base font-bold tabular-nums ${TONE[tone]}`}>
+          {value}
+          {est && <Est />}
+        </span>
         {unit && <span className="text-[10px] text-ink-faint">{unit}</span>}
       </div>
     </div>
@@ -213,4 +218,21 @@ export function Prose({ children }: { children: ReactNode }) {
 
 export function Mono({ children }: { children: ReactNode }) {
   return <span className="font-mono font-bold text-ink">{children}</span>;
+}
+
+/**
+ * Marks a number as estimate-grade rather than measured. Every currency figure
+ * on this site is derived from industry benchmarks, not from an official
+ * statistic, and the hazard scenarios are modelled rather than observed — so
+ * they all carry this instead of standing bare next to the platform results.
+ */
+export function Est({ title }: { title?: string }) {
+  return (
+    <sup
+      title={title ?? "estimate — 產業基準推算,非官方統計"}
+      className="ml-0.5 cursor-help align-super text-[9px] font-bold tracking-wide text-warn"
+    >
+      est.
+    </sup>
+  );
 }
