@@ -55,8 +55,23 @@ const check = (name: string, ok: boolean, detail = "") => {
   if (!ok) failures++;
 };
 
+// A duplicated key is legal JSON-ish TypeScript that silently drops the earlier
+// entry, so catch it here rather than leaving it to tsc's TS1117.
+for (const [name, file] of [["EN", "i18n-en.ts"], ["JA", "i18n-ja.ts"]] as const) {
+  const src = readFileSync(join(ROOT, "src/lib", file), "utf8");
+  const seen = new Set<string>();
+  const dup: string[] = [];
+  for (const m of src.matchAll(/\n  ("(?:[^"\\]|\\.)*"):/g)) {
+    if (seen.has(m[1])) dup.push(m[1]);
+    seen.add(m[1]);
+  }
+  check(`no duplicate ${name} keys`, dup.length === 0, dup.join(", "));
+}
+
 for (const [name, dict] of [["EN", EN], ["JA", JA]] as const) {
   const missing = [...keys].filter((k) => !(k in dict));
+
+
   check(`every used key has a ${name} entry (${keys.size} keys)`, missing.length === 0);
   for (const k of missing) console.log(`        missing: ${k.slice(0, 60)}`);
 

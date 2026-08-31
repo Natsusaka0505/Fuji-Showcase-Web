@@ -553,8 +553,6 @@ export const EN: Record<string, string> = {
     "Colombo / Suez corridor",
   "跨太平洋經巴拿馬":
     "Trans-Pacific via Panama",
-  "基準情境":
-    "Baseline scenario",
   "直航停航":
     "Direct service suspended",
   "加高雄封港":
