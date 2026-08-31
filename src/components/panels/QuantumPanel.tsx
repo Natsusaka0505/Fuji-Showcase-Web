@@ -118,14 +118,14 @@ export function QuantumPanel() {
         <RouteFlipMap off={P.off.route} on={P.on.route} showOn={warOn}
           labels={{ off: t(P.off.label_zh), on: t(P.on.label_zh) }} />
         <div className="mt-3 flex flex-wrap gap-3">
-          <Stat label={t("tier-1 純量子")} value={P.tier1_ratio.toFixed(6)} tone="quantum" />
-          <Stat label={t("tier-2 hybrid")} value={P.tier2_ratio.toFixed(6)} tone="quantum" />
+          <Stat label={t("tier-1 純量子(戰爭開啟)")} value={P.tier1_ratio.toFixed(6)} tone="quantum" />
+          <Stat label={t("tier-2 hybrid(top-512 修補)")} value={P.tier2_ratio.toFixed(6)} tone="quantum" />
         </div>
         <Prose>
           {t("戰爭風險項關閉時,最佳航線走可倫坡 / 蘇伊士走廊;開啟後整條翻到跨太平洋經洛杉磯、紐約、安特衛普。權重不是憑空設的 —— 以蘇伊士運河 2024 年通行量崩跌校準,等效 10 天延誤。這重現了 2024 年航運業真實的改道決策。")}
         </Prose>
         <Caveat>
-          {t("兩個近似比為該 job 的整體數值,報告未分別歸屬給「開」或「關」情境,故不作歸屬標示。")}
+          {t("兩個近似比皆為「戰爭風險開啟」那個實例的數值(報告 §5.2);tier-2 為 top-512 修補。平台獨立列舉的基準真值與建置期列舉一致到小數第四位(皆為 {c},full-QUBO 口徑)。", { c: P.ground_truth_cost.toFixed(4) })}
         </Caveat>
       </Card>
 

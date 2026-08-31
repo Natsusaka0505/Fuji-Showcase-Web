@@ -227,10 +227,12 @@ export const report40 = report40Json as {
     hits_tier: string;
     scenarios: { name_zh: string; job: string; route_changed: boolean; gap: number }[];
   };
+  report_quote: { section: string; en: string; zh: string; url: string };
   flip: {
     job: string; figure: string; source: string; target: string; qubits: number;
     war_penalty_note_zh: string; calibration: string;
     tier1_ratio: number; tier2_ratio: number; ratio_note: string;
+    ratio_scenario: string; ground_truth_cost: number;
     off: { label_zh: string; corridor_zh: string; route: string[] };
     on: { label_zh: string; corridor_zh: string; route: string[] };
   };

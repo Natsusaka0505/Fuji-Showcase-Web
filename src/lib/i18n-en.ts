@@ -459,10 +459,6 @@ export const EN: Record<string, string> = {
     "Pure-quantum ratio {r}",
   "純量子抽樣無合法樣本":
     "Pure-quantum sampling drew no feasible route",
-  "tier-1 純量子":
-    "tier-1 pure quantum",
-  "tier-2 hybrid":
-    "tier-2 hybrid",
   "tier-2 hybrid(量子 + 古典修補)":
     "tier-2 hybrid (quantum + classical repair)",
   "無":
@@ -545,8 +541,6 @@ export const EN: Record<string, string> = {
     "War-risk term on",
   "戰爭風險項關閉時,最佳航線走可倫坡 / 蘇伊士走廊;開啟後整條翻到跨太平洋經洛杉磯、紐約、安特衛普。權重不是憑空設的 —— 以蘇伊士運河 2024 年通行量崩跌校準,等效 10 天延誤。這重現了 2024 年航運業真實的改道決策。":
     "With the war-risk term off, the optimal route runs through the Colombo / Suez corridor; switch it on and the whole thing flips trans-Pacific via Los Angeles, New York and Antwerp. The weight is not invented — it is calibrated on the 2024 collapse in Suez Canal transits, equivalent to a 10-day delay. This reproduces the rerouting the shipping industry actually did in 2024.",
-  "兩個近似比為該 job 的整體數值,報告未分別歸屬給「開」或「關」情境,故不作歸屬標示。":
-    "Both ratios are job-level figures. The report does not attribute them to the on or off scenario individually, so neither is claimed here.",
   "40-qubit 規模里程碑(七月 Grover,誠實保留的失敗案例)":
     "40-qubit scale milestone (July Grover — the failure, kept on purpose)",
   "可倫坡 / 蘇伊士走廊":
@@ -559,4 +553,20 @@ export const EN: Record<string, string> = {
     "plus Kaohsiung port closure",
   "加紅海中斷":
     "plus Red Sea disruption",
+
+  // report §8 quote; Figure 2 ratio attribution
+  "報告 {s}":
+    "Report {s}",
+  "建立在此引擎上的互動情境應用(靜態、離線快取的網頁示範器)是一種部署形態的示範;同一套介面也能由古典解法驅動,它的價值在決策流程,而不在量子的必要性。":
+    "The interactive scenario application built on this engine (a static, offline-cached web demonstrator) is a deployment-pattern illustration; the same interface could be served by a classical solver, and its value is the decision workflow, not quantum necessity.",
+  "tier-1 純量子(戰爭開啟)":
+    "tier-1 pure quantum (war on)",
+  "tier-2 hybrid(top-512 修補)":
+    "tier-2 hybrid (top-512 repair)",
+  "兩個近似比皆為「戰爭風險開啟」那個實例的數值(報告 §5.2);tier-2 為 top-512 修補。平台獨立列舉的基準真值與建置期列舉一致到小數第四位(皆為 {c},full-QUBO 口徑)。":
+    "Both ratios are for the war-enabled instance (report §5.2); tier-2 is top-512 repair. The platform's independently enumerated ground truth agreed with the build-time enumeration to four decimals ({c} for both, full-QUBO convention).",
+  "tier-1 純量子":
+    "tier-1 pure quantum",
+  "tier-2 hybrid":
+    "tier-2 hybrid",
 };

@@ -71,7 +71,15 @@
     },
     "tier1_ratio": 0.999818,
     "tier2_ratio": 0.999985,
-    "ratio_note": "Job-level ratios as reported; the source does not attribute them to the war-on or war-off scenario individually, so they are shown unattributed."
+    "ratio_note": "Both ratios are reported for the war-enabled instance (§5.2). tier-2 is top-512 repair. Platform ground truth agreed with the build-time enumeration to four decimals (1.1420 both, full-QUBO convention).",
+    "ratio_scenario": "on",
+    "ground_truth_cost": 1.142
   },
-  "tier_note": "tier-1 = pure quantum sampling; tier-2 = hybrid after classical repair. The flagship's 884 optimum hits are tier-1 draws."
+  "tier_note": "tier-1 = pure quantum sampling; tier-2 = hybrid after classical repair. The flagship's 884 optimum hits are tier-1 draws.",
+  "report_quote": {
+    "section": "§8",
+    "en": "The interactive scenario application built on this engine (a static, offline-cached web demonstrator) is a deployment-pattern illustration; the same interface could be served by a classical solver, and its value is the decision workflow, not quantum necessity.",
+    "zh": "建立在此引擎上的互動情境應用(靜態、離線快取的網頁示範器)是一種部署形態的示範;同一套介面也能由古典解法驅動,它的價值在決策流程,而不在量子的必要性。",
+    "url": "https://github.com/Natsusaka0505/Fuji-Showcase-Web"
+  }
 }

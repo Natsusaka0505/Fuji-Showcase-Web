@@ -35,6 +35,7 @@ for (const k of ["α 成本", "β 時間", "γ₁ 地緣", "γ₂ 港口", "γ�
 // report_40q.json ships display strings rendered through t(variable).
 const rep = read("report_40q.json");
 for (const sc of rep.flagship.scenarios) keys.add(sc.name_zh);
+keys.add(rep.report_quote.zh);
 for (const side of [rep.flip.off, rep.flip.on]) {
   keys.add(side.label_zh);
   keys.add(side.corridor_zh);

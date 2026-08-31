@@ -21,7 +21,7 @@ import { QuantumPanel } from "@/components/panels/QuantumPanel";
 import { AuditPanel } from "@/components/panels/AuditPanel";
 import { ShowcasePanel } from "@/components/panels/ShowcasePanel";
 import { V2Panel } from "@/components/panels/V2Panel";
-import { meta, edgeData, ports, CRITICAL_A, fmtUsd } from "@/data";
+import { meta, edgeData, ports, CRITICAL_A, fmtUsd, report40 } from "@/data";
 
 const TABS = [
   { key: "map", label: "地圖", Panel: MapPanel },
@@ -108,10 +108,25 @@ function Shell() {
           <Panel />
         </main>
       </div>
-      <footer className="border-t border-border px-4 py-3">
-        <p className="text-center text-[10px] leading-relaxed text-ink-faint">
-          {t("本站所有量子結果均為富士通 1024×FX700 無雜訊古典態向量模擬,非量子實機,不宣稱量子優勢。")}
-        </p>
+      <footer className="border-t border-border px-4 py-4">
+        <div className="mx-auto max-w-3xl space-y-2 text-center">
+          <p className="text-[10px] leading-relaxed text-ink-faint">
+            {t("本站所有量子結果均為富士通 1024×FX700 無雜訊古典態向量模擬,非量子實機,不宣稱量子優勢。")}
+          </p>
+          {/* The report says what this site is for; quoting it is more honest than
+              paraphrasing, so §8's own sentence stands here verbatim. */}
+          <blockquote className="border-t border-border pt-2 text-[10px] leading-relaxed text-ink-faint">
+            <span className="font-mono text-ink-dim">{t("報告 {s}", { s: report40.report_quote.section })}</span>
+            {" — "}
+            {t(report40.report_quote.zh)}
+          </blockquote>
+          <p className="text-[10px] text-ink-faint">
+            <a href={report40.report_quote.url} target="_blank" rel="noopener noreferrer"
+              className="text-quantum hover:underline">
+              {report40.report_quote.url.replace("https://", "")}
+            </a>
+          </p>
+        </div>
       </footer>
     </div>
   );
