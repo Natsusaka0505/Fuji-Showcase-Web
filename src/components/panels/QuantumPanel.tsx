@@ -190,9 +190,6 @@ export function QuantumPanel() {
           <Stat label={t("2024 冠軍")} value="39q" />
           <Stat label={t("本隊")} value="40q" tone="gold" />
         </div>
-        <Prose>
-          {t("Fujitsu 模擬器上限 40 qubit。2024 冠軍 TU Delft 用 39q,本隊用滿上限。")}
-        </Prose>
       </Card>
 
       <Card title={t("16q 即時 vs 40q 播放")} subtitle={t("同一個 GAS 演算法,規模差 24 個 qubit")} className="xl:col-span-2">

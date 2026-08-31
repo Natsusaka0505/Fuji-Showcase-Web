@@ -321,8 +321,6 @@ export const EN: Record<string, string> = {
   "16q 驗證規模": "16q verified scale",
   "2024 冠軍": "2024 champion",
   "本隊": "This team",
-  "Fujitsu 模擬器上限 40 qubit。2024 冠軍 TU Delft 用 39q,本隊用滿上限。":
-    "Fujitsu's simulator tops out at 40 qubits. The 2024 winner, TU Delft, used 39; this run uses the full ceiling.",
   "16q 即時 vs 40q 播放": "16q live vs 40q replay",
   "同一個 GAS 演算法,規模差 24 個 qubit": "The same GAS algorithm, 24 qubits apart",
   "項目": "Item",
