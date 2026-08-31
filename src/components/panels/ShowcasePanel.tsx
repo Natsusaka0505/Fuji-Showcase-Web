@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 import { Card, Stat, Chip, Slider, Caveat, Prose, Mono } from "@/components/ui";
 import { Bar } from "@/components/charts";
 import { useI18n } from "@/lib/i18n";
+import { useStore } from "@/lib/store";
 import { showcase, showcaseNetwork, type ShowcaseEdge } from "@/data";
 
 const COMP = [
@@ -32,6 +33,7 @@ const MODE_ZH: Record<string, string> = { Road: "公路", Rail: "鐵路", Air: "
 const MODE_JA: Record<string, string> = { Road: "道路", Rail: "鉄道", Air: "航空", Sea: "海運" };
 
 export function ShowcasePanel() {
+  const { dev } = useStore();
   const { t, locale } = useI18n();
   const [w, setW] = useState<Weights>(DEFAULT_W);
   const isDefaultW = COMP.every((c) => w[c.key] === 1);
@@ -132,20 +134,25 @@ export function ShowcasePanel() {
             : <Chip label={isDefaultW ? t("官方權重") : t("what-if 權重")} tone={isDefaultW ? "good" : "warn"} />
         }
       >
-        <div className="grid gap-x-6 sm:grid-cols-2">
-          {COMP.map((c) => (
-            <Slider key={c.key} label={t("{l}(官方 {w})", { l: t(c.label), w: c.w })} value={w[c.key]} min={0} max={3} step={0.05}
-              onChange={(v) => setW((p) => ({ ...p, [c.key]: v }))}
-              format={(v) => `${v.toFixed(2)}×`}
-              tone={c.key === "alpha" ? "gold" : c.key === "beta" ? "quantum" : c.key === "gamma1" ? "good" : c.key === "gamma2" ? "warn" : "bad"} />
-          ))}
-          {!isDefaultW && (
-            <button type="button" onClick={() => setW(DEFAULT_W)}
-              className="mb-4 self-end rounded-lg border border-border px-3 py-2 text-xs text-ink-dim transition-colors hover:text-ink">
-              {t("重設為官方權重")}
-            </button>
-          )}
-        </div>
+        {dev && (
+          <div className="grid gap-x-6 sm:grid-cols-2">
+            {COMP.map((c) => (
+              <Slider key={c.key} label={t("{l}(官方 {w})", { l: t(c.label), w: c.w })} value={w[c.key]} min={0} max={3} step={0.05}
+                onChange={(v) => setW((p) => ({ ...p, [c.key]: v }))}
+                format={(v) => `${v.toFixed(2)}×`}
+                tone={c.key === "alpha" ? "gold" : c.key === "beta" ? "quantum" : c.key === "gamma1" ? "good" : c.key === "gamma2" ? "warn" : "bad"} />
+            ))}
+            {!isDefaultW && (
+              <button type="button" onClick={() => setW(DEFAULT_W)}
+                className="mb-4 self-end rounded-lg border border-border px-3 py-2 text-xs text-ink-dim transition-colors hover:text-ink">
+                {t("重設為官方權重")}
+              </button>
+            )}
+          </div>
+        )}
+        {!dev && (
+          <p className="text-[11px] leading-relaxed text-ink-dim">{t("五分項權重屬進階旋鈕,預設鎖定在官方值。開啟頁首「進階」即可調整。")}</p>
+        )}
         <ol>
           {corridors.map((c, i) => {
             const moved = c.baseRank - (i + 1);

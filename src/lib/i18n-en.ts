@@ -597,4 +597,8 @@ export const EN: Record<string, string> = {
     "switch it in the sidebar",
   "開啟頁首「進階」後可拖動 penalty_A,看約束何時失效":
     "Switch on Advanced in the header to drag penalty_A and watch the constraint fail",
+  "風險倍率、情境數與 CVaR 分位屬進階旋鈕,預設鎖定在報告設定。開啟頁首「進階」即可調整。":
+    "The hazard multipliers, scenario count and CVaR quantile are advanced knobs, locked to the report's settings by default. Switch on Advanced in the header to adjust them.",
+  "五分項權重屬進階旋鈕,預設鎖定在官方值。開啟頁首「進階」即可調整。":
+    "The five component weights are advanced knobs, locked to the official values by default. Switch on Advanced in the header to adjust them.",
 };

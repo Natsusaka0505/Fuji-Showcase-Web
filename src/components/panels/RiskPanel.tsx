@@ -7,7 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { cvar, fmtUsd, ports } from "@/data";
 
 export function RiskPanel() {
-  const { params, setRisk, routeRisk, benchmarkRisks, solution, togglePort, toggleHazardPort } = useStore();
+  const { params, setRisk, routeRisk, benchmarkRisks, solution, togglePort, toggleHazardPort, dev } = useStore();
   const { t } = useI18n();
   const R = params.risk;
 
@@ -92,34 +92,39 @@ export function RiskPanel() {
       </Card>
 
       <Card title={t("風險參數")} subtitle={t("調整後上方圖表即時更新")} className="xl:col-span-2">
-        <div className="grid gap-x-8 md:grid-cols-2 xl:grid-cols-3">
-          <Slider label={t("每日延誤成本(estimate)")} value={R.dailyDelayCostUsd} min={50000} max={600000} step={1000}
-            onChange={(v) => setRisk({ dailyDelayCostUsd: v })} format={fmtUsd}
-            hint={t("20,000 TEU 貨櫃輪;Drewry/Alphaliner 推算,estimate 級")} />
-          <Slider label={t("航程窗口")} value={R.horizonDays} min={7} max={90} step={1}
-            onChange={(v) => setRisk({ horizonDays: v })} format={(v) => t("{n} 天", { n: v.toFixed(0) })}
-            hint={t("暴露在災害風險下的時間長度")} />
-          <Slider label={t("CVaR 分位")} value={R.cvarQuantile} min={0.8} max={0.99} step={0.01}
-            onChange={(v) => setRisk({ cvarQuantile: v })} format={(v) => `${(v * 100).toFixed(0)}%`}
-            hint={t("看最壞的百分之幾")} tone="bad" />
-          <Slider label={t("蘇伊士衝突係數")} value={R.suezConflictMultiplier} min={1} max={3} step={0.01}
-            onChange={(v) => setRisk({ suezConflictMultiplier: v })} format={(v) => `${v.toFixed(2)}×`}
-            hint={t("1.00 = 現況(已含紅海危機);1.43 = 進一步升級")} tone="warn" />
-          <Slider label={t("颱風強度")} value={R.typhoonScale} min={0} max={3} step={0.05}
-            onChange={(v) => setRisk({ typhoonScale: v })} format={(v) => `${v.toFixed(2)}×`}
-            hint={t("JMA 關港天數的縮放")} />
-          <Slider label={t("地震頻率")} value={R.quakeScale} min={0} max={3} step={0.05}
-            onChange={(v) => setRisk({ quakeScale: v })} format={(v) => `${v.toFixed(2)}×`}
-            hint={t("USGS 地震年率的縮放")} />
-          <Slider label={t("情境數")} value={R.nScenarios} min={1000} max={50000} step={1000}
-            onChange={(v) => setRisk({ nScenarios: v })} format={(v) => v.toLocaleString()}
-            hint={t("越多越穩定;50,000 仍在 10 ms 內")} tone="quantum" />
-          <div className="self-end">
-            <Toggle label={t("荷莫茲海峽封鎖")} value={R.hormuzBlockade}
-              onChange={(v) => setRisk({ hormuzBlockade: v })}
-              hint={t("繞好望角 +12 天(estimate);2026-02 事實封鎖情境")} />
+        {dev && (
+          <div className="grid gap-x-8 md:grid-cols-2 xl:grid-cols-3">
+            <Slider label={t("每日延誤成本(estimate)")} value={R.dailyDelayCostUsd} min={50000} max={600000} step={1000}
+              onChange={(v) => setRisk({ dailyDelayCostUsd: v })} format={fmtUsd}
+              hint={t("20,000 TEU 貨櫃輪;Drewry/Alphaliner 推算,estimate 級")} />
+            <Slider label={t("航程窗口")} value={R.horizonDays} min={7} max={90} step={1}
+              onChange={(v) => setRisk({ horizonDays: v })} format={(v) => t("{n} 天", { n: v.toFixed(0) })}
+              hint={t("暴露在災害風險下的時間長度")} />
+            <Slider label={t("CVaR 分位")} value={R.cvarQuantile} min={0.8} max={0.99} step={0.01}
+              onChange={(v) => setRisk({ cvarQuantile: v })} format={(v) => `${(v * 100).toFixed(0)}%`}
+              hint={t("看最壞的百分之幾")} tone="bad" />
+            <Slider label={t("蘇伊士衝突係數")} value={R.suezConflictMultiplier} min={1} max={3} step={0.01}
+              onChange={(v) => setRisk({ suezConflictMultiplier: v })} format={(v) => `${v.toFixed(2)}×`}
+              hint={t("1.00 = 現況(已含紅海危機);1.43 = 進一步升級")} tone="warn" />
+            <Slider label={t("颱風強度")} value={R.typhoonScale} min={0} max={3} step={0.05}
+              onChange={(v) => setRisk({ typhoonScale: v })} format={(v) => `${v.toFixed(2)}×`}
+              hint={t("JMA 關港天數的縮放")} />
+            <Slider label={t("地震頻率")} value={R.quakeScale} min={0} max={3} step={0.05}
+              onChange={(v) => setRisk({ quakeScale: v })} format={(v) => `${v.toFixed(2)}×`}
+              hint={t("USGS 地震年率的縮放")} />
+            <Slider label={t("情境數")} value={R.nScenarios} min={1000} max={50000} step={1000}
+              onChange={(v) => setRisk({ nScenarios: v })} format={(v) => v.toLocaleString()}
+              hint={t("越多越穩定;50,000 仍在 10 ms 內")} tone="quantum" />
+            <div className="self-end">
+              <Toggle label={t("荷莫茲海峽封鎖")} value={R.hormuzBlockade}
+                onChange={(v) => setRisk({ hormuzBlockade: v })}
+                hint={t("繞好望角 +12 天(estimate);2026-02 事實封鎖情境")} />
+            </div>
           </div>
-        </div>
+        )}
+        {!dev && (
+          <p className="text-[11px] leading-relaxed text-ink-dim">{t("風險倍率、情境數與 CVaR 分位屬進階旋鈕,預設鎖定在報告設定。開啟頁首「進階」即可調整。")}</p>
+        )}
         <Caveat>
           {t("模型結構由報告的四條航線 CVaR 表回歸還原:平均延誤誤差 0.15%,尾部形狀以 2 個參數擬合、RMS {r}%。每日延誤成本為 estimate 級,非官方統計。", { r: cvar.mc_model.tail_fit_rms_err_pct })}
         </Caveat>
@@ -188,11 +193,13 @@ export function RiskPanel() {
             </tbody>
           </table>
         </div>
-        <div className="mt-3 md:max-w-sm">
-          <Slider label={t("災害升級倍率")} value={R.hazardEscalation} min={1} max={10} step={0.5}
-            onChange={(v) => setRisk({ hazardEscalation: v })} format={(v) => `${v.toFixed(1)}×`}
-            hint={t("套用在被圈選港口的颱風/地震年率上,與全域縮放相乘;1.0× 即回到基線")} tone="warn" />
-        </div>
+        {dev && (
+          <div className="mt-3 md:max-w-sm">
+            <Slider label={t("災害升級倍率")} value={R.hazardEscalation} min={1} max={10} step={0.5}
+              onChange={(v) => setRisk({ hazardEscalation: v })} format={(v) => `${v.toFixed(1)}×`}
+              hint={t("套用在被圈選港口的颱風/地震年率上,與全域縮放相乘;1.0× 即回到基線")} tone="warn" />
+          </div>
+        )}
         <Prose>
           {t("封鎖作用在 QUBO 可行集,最佳航線即時換路(與「地圖」分頁的點港封鎖同一件事);颱風與地震進蒙地卡羅,到「排行」分頁切「風險 CVaR」看災害如何改寫路線排序。基線災害率(JMA/USGS)永遠生效 —— 這裡圈的是「進一步升級」情境。")}
         </Prose>
