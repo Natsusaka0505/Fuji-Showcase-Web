@@ -35,8 +35,9 @@ export const EN: Record<string, string> = {
   "荷莫茲海峽封鎖": "Strait of Hormuz blockade",
   "起點": "Origin",
   "終點": "Destination",
+  "換另一端": "switch the other end",
+  "平台實測 {n} 條走廊;選到未配對的港會自動跳到有實測的組合": "{n} corridors were measured on the platform; picking an unpaired port snaps to a measured corridor",
   "三條線是同一題的三層答案:金色 = 窮舉出的古典最優;藍色 = 純量子抽樣抽到的最佳合法航線;綠色 = 量子樣本經 top-512 古典修補後的最佳航線(hybrid)。共用的航段各彎一邊以便分辨;綠線與金線同路 = 修補後精確命中,藍線與金線同路 = 純量子直接命中。": "Three lines, three tiers of the same instance: gold = exact classical optimum from enumeration; blue = best feasible route found by pure quantum sampling; green = best route after top-512 classical repair of the quantum samples (hybrid). Shared legs are bowed apart so they stay distinguishable; green on gold = exact hit after repair, blue on gold = exact hit by pure sampling.",
-  "只列出平台實測過的 15 條走廊": "Only the fifteen corridors measured on the platform are listed",
   "只列出有向路網可達的港口": "Only ports reachable on the directed network are listed",
   "非預設起終點為瀏覽器端衍生實例,未在比賽平台驗證;−97.4936、A* = 0.74 等已發表數字僅屬 Singapore → Los Angeles。":
     "A non-default endpoint pair is a browser-derived instance, never validated on the contest platform; published figures such as −97.4936 and A* = 0.74 belong to Singapore → Los Angeles only.",

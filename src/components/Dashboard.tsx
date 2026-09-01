@@ -293,29 +293,47 @@ function AdvancedColumn() {
 
 /**
  * Origin / destination for the 30-port tab. The platform ran exactly fifteen
- * corridors, so the destination list is whatever was measured for the chosen
- * origin — two selects, never a free pair, so the sidebar cannot point at an
- * instance that does not exist.
+ * corridors, so both lists show every measured port and a pick that has no
+ * measured partner snaps the other side to a corridor that exists — the
+ * sidebar can never point at an instance the platform did not run.
  */
 function CorridorPicker() {
   const { t } = useI18n();
   const { params, setV2Corridor } = useStore();
   const sources = useMemo(() => Array.from(new Set(v2Corridors.map((c) => c.source))), []);
-  const targets = useMemo(
-    () => v2Corridors.filter((c) => c.source === params.v2Source).map((c) => c.target),
-    [params.v2Source],
-  );
-  const opt = (names: string[]) => names.map((n) => ({ value: n, label: n }));
+  const targets = useMemo(() => Array.from(new Set(v2Corridors.map((c) => c.target))), []);
+  const has = (s: string, d: string) => v2Corridors.some((c) => c.source === s && c.target === d);
+  const partners = (s: string) => v2Corridors.filter((c) => c.source === s).map((c) => c.target);
+  const opt = (names: string[], other: string, isSource: boolean) =>
+    names.map((n) => ({
+      value: n,
+      label: (isSource ? has(n, other) : has(other, n)) ? n : `${n}  ·  ${t("換另一端")}`,
+    }));
   const pickSource = (source: string) => {
-    const ok = v2Corridors.filter((c) => c.source === source).map((c) => c.target);
+    const ok = partners(source);
     setV2Corridor(source, ok.includes(params.v2Target) ? params.v2Target : ok[0]);
+  };
+  const pickTarget = (target: string) => {
+    if (has(params.v2Source, target)) return setV2Corridor(params.v2Source, target);
+    const c = v2Corridors.find((c) => c.target === target)!;
+    setV2Corridor(c.source, c.target);
   };
   return (
     <div className="mb-2">
-      <Select label={t("起點")} value={params.v2Source} options={opt(sources)} onChange={pickSource} />
-      <Select label={t("終點")} value={params.v2Target} options={opt(targets)}
-        onChange={(target) => setV2Corridor(params.v2Source, target)}
-        hint={t("只列出平台實測過的 15 條走廊")} />
+      <Select label={t("起點")} value={params.v2Source} options={opt(sources, params.v2Target, true)} onChange={pickSource} />
+      <Select label={t("終點")} value={params.v2Target} options={opt(targets, params.v2Source, false)} onChange={pickTarget}
+        hint={t("平台實測 {n} 條走廊;選到未配對的港會自動跳到有實測的組合", { n: v2Corridors.length })} />
+      <div className="mb-1 flex flex-wrap gap-1">
+        {partners(params.v2Source).map((d) => (
+          <button key={d} type="button" onClick={() => setV2Corridor(params.v2Source, d)}
+            aria-pressed={d === params.v2Target}
+            className={`rounded-full border px-2 py-0.5 text-[10px] transition-colors ${
+              d === params.v2Target ? "border-gold bg-gold font-bold text-bg" : "border-border text-ink-dim hover:text-ink"
+            }`}>
+            {params.v2Source} → {d}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
