@@ -122,7 +122,7 @@ function Shell() {
 
       <div className="flex flex-col lg:flex-row lg:items-start">
         <aside className={`border-b border-border px-4 py-4 lg:sticky lg:top-[92px] lg:w-72 lg:shrink-0 lg:border-b-0 lg:border-r ${drawerOpen ? "block" : "hidden lg:block"}`}>
-          <ParamColumn />
+          <ParamColumn gotoV2={() => setTab("v2")} />
         </aside>
         <main className="min-w-0 flex-1 p-4">
           <Panel />
@@ -153,7 +153,7 @@ function Shell() {
 }
 
 /** The parameters every panel reacts to. */
-function ParamColumn() {
+function ParamColumn({ gotoV2 }: { gotoV2: () => void }) {
   const { t } = useI18n();
   const { params, setParams, toggleV2Hazard, dev } = useStore();
 
@@ -161,10 +161,13 @@ function ParamColumn() {
     <div>
       <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t("情境")}</h2>
 
-      <CorridorPicker />
-      <p className="mb-4 text-[10px] leading-snug text-ink-faint">
+      <CorridorPicker gotoV2={gotoV2} />
+      {/* Touching these controls only moves the 30-port tab, so any edit jumps
+          there — otherwise the sidebar looks dead from every other tab. */}
+      <button type="button" onClick={gotoV2}
+        className="mb-4 block text-left text-[10px] leading-snug text-ink-faint underline decoration-dotted underline-offset-2 transition-colors hover:text-ink">
         {t("起訖與風險套用於「30 港」分頁;其餘分頁為固定實例。")}
-      </p>
+      </button>
 
       <div className="mb-4">
         <span className="mb-1.5 block text-xs text-ink">{t("風險項")}</span>
@@ -175,7 +178,10 @@ function ParamColumn() {
               <button
                 key={key}
                 type="button"
-                onClick={() => toggleV2Hazard(key)}
+                onClick={() => {
+                  toggleV2Hazard(key);
+                  gotoV2();
+                }}
                 aria-pressed={on}
                 className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-colors ${
                   on ? tone : "border-border text-ink-dim hover:text-ink"
@@ -297,31 +303,45 @@ function AdvancedColumn() {
  * measured partner snaps the other side to a corridor that exists — the
  * sidebar can never point at an instance the platform did not run.
  */
-function CorridorPicker() {
+function CorridorPicker({ gotoV2 }: { gotoV2: () => void }) {
   const { t } = useI18n();
   const { params, setV2Corridor } = useStore();
-  const sources = useMemo(() => Array.from(new Set(v2Corridors.map((c) => c.source))), []);
-  const targets = useMemo(() => Array.from(new Set(v2Corridors.map((c) => c.target))), []);
+  // Both lists show the same sixteen ports so a visitor can see the whole
+  // campaign at a glance; a port the platform never ran in that role sits in
+  // a disabled second group — no unmeasured corridor can be invented.
+  const allPorts = useMemo(
+    () => Array.from(new Set(v2Corridors.flatMap((c) => [c.source, c.target]))).sort(),
+    [],
+  );
+  const sourceSet = useMemo(() => new Set(v2Corridors.map((c) => c.source)), []);
+  const targetSet = useMemo(() => new Set(v2Corridors.map((c) => c.target)), []);
   const has = (s: string, d: string) => v2Corridors.some((c) => c.source === s && c.target === d);
   const partners = (s: string) => v2Corridors.filter((c) => c.source === s).map((c) => c.target);
-  const opt = (names: string[]) => names.map((n) => ({ value: n, label: n }));
+  const groups = (measured: Set<string>) => [
+    { label: t("平台實測走廊"), options: allPorts.filter((n) => measured.has(n)).map((n) => ({ value: n, label: n })) },
+    { label: t("其他港口"), options: allPorts.filter((n) => !measured.has(n)).map((n) => ({ value: n, label: n, disabled: true })) },
+  ];
+  const pick = (source: string, target: string) => {
+    setV2Corridor(source, target);
+    gotoV2();
+  };
   const pickSource = (source: string) => {
     const ok = partners(source);
-    setV2Corridor(source, ok.includes(params.v2Target) ? params.v2Target : ok[0]);
+    pick(source, ok.includes(params.v2Target) ? params.v2Target : ok[0]);
   };
   const pickTarget = (target: string) => {
-    if (has(params.v2Source, target)) return setV2Corridor(params.v2Source, target);
+    if (has(params.v2Source, target)) return pick(params.v2Source, target);
     const c = v2Corridors.find((c) => c.target === target)!;
-    setV2Corridor(c.source, c.target);
+    pick(c.source, c.target);
   };
   return (
     <div className="mb-2">
-      <Select label={t("起點")} value={params.v2Source} options={opt(sources)} onChange={pickSource} />
-      <Select label={t("終點")} value={params.v2Target} options={opt(targets)} onChange={pickTarget}
+      <Select label={t("起點")} value={params.v2Source} groups={groups(sourceSet)} onChange={pickSource} />
+      <Select label={t("終點")} value={params.v2Target} groups={groups(targetSet)} onChange={pickTarget}
         hint={t("平台實測 {n} 條走廊;選到未配對的港會自動跳到有實測的組合", { n: v2Corridors.length })} />
       <div className="mb-1 flex flex-wrap gap-1">
         {partners(params.v2Source).map((d) => (
-          <button key={d} type="button" onClick={() => setV2Corridor(params.v2Source, d)}
+          <button key={d} type="button" onClick={() => pick(params.v2Source, d)}
             aria-pressed={d === params.v2Target}
             className={`rounded-full border px-2 py-0.5 text-[10px] transition-colors ${
               d === params.v2Target ? "border-gold bg-gold font-bold text-bg" : "border-border text-ink-dim hover:text-ink"

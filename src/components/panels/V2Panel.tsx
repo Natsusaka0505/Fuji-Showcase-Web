@@ -102,13 +102,14 @@ export function V2Panel() {
   ]);
 
   // Each route gets its own bulge so shared legs fan out instead of stacking:
-  // classical optimum straight, tier-1 bowed one way, tier-2 the other.
+  // classical optimum straight, tier-1 bowed one way, tier-2 the other. The
+  // offset is floored at 5 viewBox units so short corridors still separate.
   const drawRoute = (route: string[] | null, color: string, width: number, bulge: number, dash?: string) =>
     route?.slice(0, -1).flatMap((from, i) => {
       const a = project(v2.ports[from].lat, v2.ports[from].lon);
       const b = project(v2.ports[route[i + 1]].lat, v2.ports[route[i + 1]].lon);
       return legs(a, b).map(([p, q], j) => (
-        <path key={`${color}-${i}-${j}`} d={arcPath(p, q, bulge)} fill="none"
+        <path key={`${color}-${i}-${j}`} d={arcPath(p, q, bulge, 5)} fill="none"
           stroke={color} strokeWidth={width} strokeDasharray={dash} strokeLinecap="round" opacity={bulge === 0 ? 1 : 0.9} />
       ));
     });
@@ -143,9 +144,10 @@ export function V2Panel() {
             <line key={`v${i}`} x1={(MAP_W / 6) * i} y1={0} x2={(MAP_W / 6) * i} y2={MAP_H}
               stroke="var(--color-grid)" strokeWidth={0.5} />
           ))}
-          {drawRoute(Q.tier2_route, "var(--color-good)", 1.4, -0.09, "1.5 2.5")}
-          {drawRoute(Q.tier1_route, "var(--color-quantum)", 1.6, 0.09, "4 2")}
-          {drawRoute(classicalBest.route, "var(--color-gold)", 2.4, 0)}
+          {/* Paint order: classical solid underneath, tier-1 dashed, tier-2 dashed on top. */}
+          {drawRoute(classicalBest.route, "var(--color-gold)", 1.5, 0)}
+          {drawRoute(Q.tier1_route, "var(--color-quantum)", 1.1, 0.09, "4 2")}
+          {drawRoute(Q.tier2_route, "var(--color-good)", 1.0, -0.09, "1.5 2.5")}
           {Object.entries(v2.ports).map(([name, p]) => {
             const { x, y } = project(p.lat, p.lon);
             const onRoute = routePorts.has(name);
@@ -153,8 +155,8 @@ export function V2Panel() {
             return (
               <g key={name}>
                 <title>{`${name}｜TEU #${p.teu_rank_2024}`}</title>
-                {isEnd && <circle cx={x} cy={y} r={6.5} fill="var(--color-gold)" opacity={0.25} />}
-                <circle cx={x} cy={y} r={onRoute ? 3.6 : 2.4}
+                {isEnd && <circle cx={x} cy={y} r={4.5} fill="var(--color-gold)" opacity={0.25} />}
+                <circle cx={x} cy={y} r={onRoute ? 2.6 : 1.8}
                   fill={onRoute ? "var(--color-gold)" : "var(--color-ink-faint)"}
                   stroke="var(--color-bg)" strokeWidth={1} opacity={onRoute ? 1 : 0.75} />
               </g>
@@ -165,9 +167,9 @@ export function V2Panel() {
             Object.entries(v2.ports)
               .filter(([name]) => routePorts.has(name))
               .map(([name, p]) => ({ ...project(p.lat, p.lon), text: short(name) })),
-            { fontSize: 6.5, dotR: 3.6, width: MAP_W, height: MAP_H },
+            { fontSize: 4.2, dotR: 2.6, width: MAP_W, height: MAP_H },
           ).map((l) => (
-            <text key={l.text} x={l.x} y={l.y} fontSize={6.5} fontWeight="700" textAnchor={l.anchor}
+            <text key={l.text} x={l.x} y={l.y} fontSize={4.2} fontWeight="700" textAnchor={l.anchor}
               fill="var(--color-gold)" stroke="var(--color-bg)" strokeWidth={2} paintOrder="stroke"
               className="pointer-events-none select-none">
               {l.text}

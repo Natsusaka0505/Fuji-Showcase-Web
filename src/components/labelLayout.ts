@@ -57,12 +57,15 @@ export function placeLabels(
  * Quadratic arc between two points, bulging perpendicular to the chord by
  * `bulge` × chord length. Routes that share a leg (classical optimum, tier-1,
  * tier-2 nearly always do) get distinct bulges so they fan out instead of
- * overprinting; bulge 0 is a straight line.
+ * overprinting; bulge 0 is a straight line. `minOffset` (viewBox units) floors
+ * the perpendicular offset so a short chord still fans visibly; default 0
+ * keeps the pure proportional arc.
  */
-export function arcPath(a: { x: number; y: number }, b: { x: number; y: number }, bulge: number): string {
+export function arcPath(a: { x: number; y: number }, b: { x: number; y: number }, bulge: number, minOffset = 0): string {
   const dx = b.x - a.x, dy = b.y - a.y;
   const len = Math.hypot(dx, dy) || 1;
-  const cx = (a.x + b.x) / 2 - (dy / len) * bulge * len;
-  const cy = (a.y + b.y) / 2 + (dx / len) * bulge * len;
+  const off = bulge === 0 ? 0 : Math.sign(bulge) * Math.max(Math.abs(bulge) * len, minOffset);
+  const cx = (a.x + b.x) / 2 - (dy / len) * off;
+  const cy = (a.y + b.y) / 2 + (dx / len) * off;
   return `M${a.x.toFixed(1)},${a.y.toFixed(1)}Q${cx.toFixed(1)},${cy.toFixed(1)} ${b.x.toFixed(1)},${b.y.toFixed(1)}`;
 }

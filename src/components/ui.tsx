@@ -166,13 +166,21 @@ export function Toggle({ label, value, onChange, hint, tone = "warn" }: {
   );
 }
 
-export function Select({ label, value, options, onChange, hint }: {
+type SelectOption = { value: string; label: string; disabled?: boolean };
+
+/** Flat `options` or labelled `groups` (rendered as <optgroup>); pass one. */
+export function Select({ label, value, options, groups, onChange, hint }: {
   label: string;
   value: string;
-  options: { value: string; label: string }[];
+  options?: SelectOption[];
+  groups?: { label: string; options: SelectOption[] }[];
   onChange: (v: string) => void;
   hint?: string;
 }) {
+  const renderOptions = (opts: SelectOption[]) =>
+    opts.map((o) => (
+      <option key={o.value} value={o.value} disabled={o.disabled}>{o.label}</option>
+    ));
   return (
     <label className="mb-3 block">
       <span className="mb-1 block text-xs text-ink">{label}</span>
@@ -181,8 +189,9 @@ export function Select({ label, value, options, onChange, hint }: {
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border border-border bg-surface-alt px-2 py-1.5 text-xs text-ink"
       >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
+        {options && renderOptions(options)}
+        {groups?.map((g) => (
+          <optgroup key={g.label} label={g.label}>{renderOptions(g.options)}</optgroup>
         ))}
       </select>
       {hint && <span className="mt-1 block text-[10px] leading-snug text-ink-faint">{hint}</span>}
