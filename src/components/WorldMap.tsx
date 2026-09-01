@@ -13,6 +13,7 @@
 import { memo } from "react";
 import { ports, edgeData } from "@/data";
 import { LandLayer } from "@/components/LandLayer";
+import { placeLabels } from "@/components/labelLayout";
 import { useI18n } from "@/lib/i18n";
 import type { RouteSolution } from "@/engine/model";
 
@@ -130,12 +131,24 @@ export const WorldMap = memo(function WorldMap({
               )}
               {/* Generous invisible hit area — the dots are far too small to tap. */}
               <circle cx={x} cy={y} r={11} fill="transparent" />
-              <text x={x} y={y - 8} fontSize={7} fontWeight="700" textAnchor="middle"
-                fill={blocked ? "var(--color-bad)" : onRoute ? "var(--color-gold)" : "var(--color-ink-faint)"}
-                className="pointer-events-none select-none">
-                {p.iso}
-              </text>
             </g>
+          );
+        })}
+        {/* Labels in a separate pass so neighbours (HKG / KHH) get pushed apart. */}
+        {placeLabels(
+          ports.map((p) => ({ ...pos.get(p.iso)!, text: p.iso })),
+          { fontSize: 7, dotR: 4.2, width: W, height: H },
+        ).map((l) => {
+          const p = ports.find((q) => q.iso === l.text)!;
+          const onRoute = route?.routeIso.includes(p.iso) ?? false;
+          const blocked = blockedPorts.includes(p.iso);
+          return (
+            <text key={l.text} x={l.x} y={l.y} fontSize={7} fontWeight="700" textAnchor={l.anchor}
+              fill={blocked ? "var(--color-bad)" : onRoute ? "var(--color-gold)" : "var(--color-ink-faint)"}
+              stroke="var(--color-bg)" strokeWidth={2} paintOrder="stroke"
+              className="pointer-events-none select-none">
+              {l.text}
+            </text>
           );
         })}
       </svg>

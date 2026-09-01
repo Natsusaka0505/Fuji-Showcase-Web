@@ -118,7 +118,7 @@ export function RiskPanel() {
             <div className="self-end">
               <Toggle label={t("荷莫茲海峽封鎖")} value={R.hormuzBlockade}
                 onChange={(v) => setRisk({ hormuzBlockade: v })}
-                hint={t("繞好望角 +12 天(estimate);2026-02 事實封鎖情境")} />
+                hint={t("繞好望角 +12 天(情境假設,estimate 級;非觀測值)")} />
             </div>
           </div>
         )}

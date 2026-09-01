@@ -60,9 +60,10 @@
     },
     "on": {
       "label_zh": "戰爭風險項開啟",
-      "corridor_zh": "跨太平洋經巴拿馬",
+      "corridor_zh": "跨太平洋經洛杉磯、紐約、安特衛普",
       "route": [
         "Shanghai",
+        "Taicang",
         "Los Angeles",
         "New York/New Jersey",
         "Antwerp",
@@ -73,13 +74,14 @@
     "tier2_ratio": 0.999985,
     "ratio_note": "Both ratios are reported for the war-enabled instance (§5.2). tier-2 is top-512 repair. Platform ground truth agreed with the build-time enumeration to four decimals (1.1420 both, full-QUBO convention).",
     "ratio_scenario": "on",
-    "ground_truth_cost": 1.142
+    "ground_truth_cost": 1.142,
+    "route_note": "Routes are the platform's tier-3 exact optima for job 7955798 (scan_q30_40q_SHA_RTM_etw / _et), transcribed verbatim from the result JSON."
   },
   "tier_note": "tier-1 = pure quantum sampling; tier-2 = hybrid after classical repair. The flagship's 884 optimum hits are tier-1 draws.",
   "report_quote": {
-    "section": "§8",
-    "en": "The interactive scenario application built on this engine (a static, offline-cached web demonstrator) is a deployment-pattern illustration; the same interface could be served by a classical solver, and its value is the decision workflow, not quantum necessity.",
-    "zh": "建立在此引擎上的互動情境應用(靜態、離線快取的網頁示範器)是一種部署形態的示範;同一套介面也能由古典解法驅動,它的價值在決策流程,而不在量子的必要性。",
+    "section": "§8 (Draft v1.4)",
+    "en": "No quantum computation occurs in the browser, the same interface could be served by a classical solver, and its value is the decision workflow — cached scenario answers that change when the hazard picture does — rather than any quantum necessity.",
+    "zh": "瀏覽器內沒有任何量子計算發生,同一介面可由古典求解器提供服務——其價值在於決策工作流程(隨風險圖景改變的快取情境答案),而非任何量子必要性。",
     "url": "https://github.com/Natsusaka0505/Fuji-Showcase-Web"
   }
 }

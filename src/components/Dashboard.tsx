@@ -155,29 +155,13 @@ function Shell() {
 /** The parameters every panel reacts to. */
 function ParamColumn() {
   const { t } = useI18n();
-  const { params, setParams, setV2Corridor, toggleV2Hazard, dev } = useStore();
+  const { params, setParams, toggleV2Hazard, dev } = useStore();
 
   return (
     <div>
       <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t("情境")}</h2>
 
-      <label className="mb-2 block">
-        <span className="mb-1 block text-xs text-ink">{t("起點")}</span>
-        <select
-          value={`${params.v2Source}\u2192${params.v2Target}`}
-          onChange={(e) => {
-            const [src, tgt] = e.target.value.split("\u2192");
-            setV2Corridor(src, tgt);
-          }}
-          className="w-full rounded-lg border border-border bg-surface-alt px-2 py-1.5 text-xs text-ink"
-        >
-          {v2Corridors.map((c) => (
-            <option key={`${c.source}\u2192${c.target}`} value={`${c.source}\u2192${c.target}`}>
-              {c.source} → {c.target}
-            </option>
-          ))}
-        </select>
-      </label>
+      <CorridorPicker />
       <p className="mb-4 text-[10px] leading-snug text-ink-faint">
         {t("起訖與風險套用於「30 港」分頁;其餘分頁為固定實例。")}
       </p>
@@ -303,6 +287,35 @@ function AdvancedColumn() {
       <p className="mt-2 border-t border-border pt-3 text-[10px] leading-relaxed text-ink-faint">
         {t("9 港實例的運算在你的瀏覽器即時執行:每次調整重掃 65,536 個量子態(~0.5 ms)。")}
       </p>
+    </div>
+  );
+}
+
+/**
+ * Origin / destination for the 30-port tab. The platform ran exactly fifteen
+ * corridors, so the destination list is whatever was measured for the chosen
+ * origin — two selects, never a free pair, so the sidebar cannot point at an
+ * instance that does not exist.
+ */
+function CorridorPicker() {
+  const { t } = useI18n();
+  const { params, setV2Corridor } = useStore();
+  const sources = useMemo(() => Array.from(new Set(v2Corridors.map((c) => c.source))), []);
+  const targets = useMemo(
+    () => v2Corridors.filter((c) => c.source === params.v2Source).map((c) => c.target),
+    [params.v2Source],
+  );
+  const opt = (names: string[]) => names.map((n) => ({ value: n, label: n }));
+  const pickSource = (source: string) => {
+    const ok = v2Corridors.filter((c) => c.source === source).map((c) => c.target);
+    setV2Corridor(source, ok.includes(params.v2Target) ? params.v2Target : ok[0]);
+  };
+  return (
+    <div className="mb-2">
+      <Select label={t("起點")} value={params.v2Source} options={opt(sources)} onChange={pickSource} />
+      <Select label={t("終點")} value={params.v2Target} options={opt(targets)}
+        onChange={(target) => setV2Corridor(params.v2Source, target)}
+        hint={t("只列出平台實測過的 15 條走廊")} />
     </div>
   );
 }

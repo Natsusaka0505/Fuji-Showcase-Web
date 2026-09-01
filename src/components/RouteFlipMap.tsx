@@ -9,6 +9,7 @@
 "use client";
 
 import { LandLayer } from "@/components/LandLayer";
+import { placeLabels, arcPath } from "@/components/labelLayout";
 import v2 from "@/data/q9_data/app_data_v2.json";
 
 const W = 360;
@@ -40,15 +41,11 @@ export function RouteFlipMap({
   showOn: boolean;
   labels: { off: string; on: string };
 }) {
-  const path = (route: string[]) =>
-    route
-      .map((name, i) => {
-        const p = PORTS[name];
-        if (!p) return "";
-        const { x, y } = project(p.lat, p.lon);
-        return `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`;
-      })
-      .join("");
+  // Both routes share Shanghai → Taicang; opposite bulges keep them apart.
+  const path = (route: string[], bulge: number) => {
+    const pts = route.map((name) => PORTS[name]).filter(Boolean).map((p) => project(p.lat, p.lon));
+    return pts.slice(0, -1).map((a, i) => arcPath(a, pts[i + 1], bulge)).join("");
+  };
 
   const dots = (route: string[], color: string) =>
     route.map((name) => {
@@ -67,24 +64,27 @@ export function RouteFlipMap({
       <LandLayer project={project} width={W} opacity={0.8} />
 
       {/* The inactive route stays faintly visible so the flip is legible. */}
-      <path d={path(showOn ? off : on)} fill="none" strokeWidth={1.2} strokeDasharray="3 3"
+      <path d={path(showOn ? off : on, showOn ? -0.08 : 0.08)} fill="none" strokeWidth={1.2} strokeDasharray="3 3"
         stroke={showOn ? "var(--color-quantum)" : "var(--color-bad)"} opacity={0.35} />
-      <path d={path(active)} fill="none" stroke={activeColor} strokeWidth={2.4}
+      <path d={path(active, showOn ? 0.08 : -0.08)} fill="none" stroke={activeColor} strokeWidth={2.4}
         strokeLinecap="round" strokeLinejoin="round" />
       {dots(active, activeColor)}
 
-      {active.map((name) => {
-        const p = PORTS[name];
-        if (!p) return null;
-        const { x, y } = project(p.lat, p.lon);
-        const flip = x > W * 0.72;
-        return (
-          <text key={name} x={flip ? x - 5 : x + 5} y={y - 5} fontSize={7} fontWeight="700"
-            textAnchor={flip ? "end" : "start"} fill={activeColor} className="select-none">
-            {name}
-          </text>
-        );
-      })}
+      {placeLabels(
+        active.flatMap((name) => {
+          const p = PORTS[name];
+          if (!p) return [];
+          const { x, y } = project(p.lat, p.lon);
+          return [{ x, y, text: name }];
+        }),
+        { fontSize: 7, dotR: 3, width: W, height: H },
+      ).map((l) => (
+        <text key={l.text} x={l.x} y={l.y} fontSize={7} fontWeight="700"
+          textAnchor={l.anchor} fill={activeColor} stroke="var(--color-bg)" strokeWidth={2} paintOrder="stroke"
+          className="select-none">
+          {l.text}
+        </text>
+      ))}
     </svg>
   );
 }

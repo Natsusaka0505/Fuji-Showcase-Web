@@ -16,6 +16,7 @@ import { useI18n } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { v2, type V2Instance } from "@/data";
 import { LandLayer } from "@/components/LandLayer";
+import { placeLabels, arcPath } from "@/components/labelLayout";
 
 const MAP_W = 360;
 const MAP_H = 190;
@@ -100,13 +101,15 @@ export function V2Panel() {
     ...(Q.tier2_route ?? []),
   ]);
 
-  const drawRoute = (route: string[] | null, color: string, width: number, dash?: string) =>
+  // Each route gets its own bulge so shared legs fan out instead of stacking:
+  // classical optimum straight, tier-1 bowed one way, tier-2 the other.
+  const drawRoute = (route: string[] | null, color: string, width: number, bulge: number, dash?: string) =>
     route?.slice(0, -1).flatMap((from, i) => {
       const a = project(v2.ports[from].lat, v2.ports[from].lon);
       const b = project(v2.ports[route[i + 1]].lat, v2.ports[route[i + 1]].lon);
       return legs(a, b).map(([p, q], j) => (
-        <line key={`${color}-${i}-${j}`} x1={p.x} y1={p.y} x2={q.x} y2={q.y}
-          stroke={color} strokeWidth={width} strokeDasharray={dash} strokeLinecap="round" />
+        <path key={`${color}-${i}-${j}`} d={arcPath(p, q, bulge)} fill="none"
+          stroke={color} strokeWidth={width} strokeDasharray={dash} strokeLinecap="round" opacity={bulge === 0 ? 1 : 0.9} />
       ));
     });
 
@@ -140,9 +143,9 @@ export function V2Panel() {
             <line key={`v${i}`} x1={(MAP_W / 6) * i} y1={0} x2={(MAP_W / 6) * i} y2={MAP_H}
               stroke="var(--color-grid)" strokeWidth={0.5} />
           ))}
-          {drawRoute(Q.tier2_route, "var(--color-good)", 1.4, "1.5 2.5")}
-          {drawRoute(Q.tier1_route, "var(--color-quantum)", 1.6, "4 2")}
-          {drawRoute(classicalBest.route, "var(--color-gold)", 2.4)}
+          {drawRoute(Q.tier2_route, "var(--color-good)", 1.4, -0.09, "1.5 2.5")}
+          {drawRoute(Q.tier1_route, "var(--color-quantum)", 1.6, 0.09, "4 2")}
+          {drawRoute(classicalBest.route, "var(--color-gold)", 2.4, 0)}
           {Object.entries(v2.ports).map(([name, p]) => {
             const { x, y } = project(p.lat, p.lon);
             const onRoute = routePorts.has(name);
@@ -154,21 +157,31 @@ export function V2Panel() {
                 <circle cx={x} cy={y} r={onRoute ? 3.6 : 2.4}
                   fill={onRoute ? "var(--color-gold)" : "var(--color-ink-faint)"}
                   stroke="var(--color-bg)" strokeWidth={1} opacity={onRoute ? 1 : 0.75} />
-                {onRoute && (
-                  <text x={x} y={y - 6.5} fontSize={6.5} fontWeight="700" textAnchor="middle"
-                    fill="var(--color-gold)" className="pointer-events-none select-none">
-                    {short(name)}
-                  </text>
-                )}
               </g>
             );
           })}
+          {/* Labels placed after all dots so the collision pass sees every port. */}
+          {placeLabels(
+            Object.entries(v2.ports)
+              .filter(([name]) => routePorts.has(name))
+              .map(([name, p]) => ({ ...project(p.lat, p.lon), text: short(name) })),
+            { fontSize: 6.5, dotR: 3.6, width: MAP_W, height: MAP_H },
+          ).map((l) => (
+            <text key={l.text} x={l.x} y={l.y} fontSize={6.5} fontWeight="700" textAnchor={l.anchor}
+              fill="var(--color-gold)" stroke="var(--color-bg)" strokeWidth={2} paintOrder="stroke"
+              className="pointer-events-none select-none">
+              {l.text}
+            </text>
+          ))}
         </svg>
         <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
           <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 rounded" style={{ background: "var(--color-gold)" }} /><span className="text-[10px] text-ink-faint">{t("古典最優")}</span></span>
           <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 rounded" style={{ background: "var(--color-quantum)" }} /><span className="text-[10px] text-ink-faint">{t("量子 tier-1")}</span></span>
           <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 rounded" style={{ background: "var(--color-good)" }} /><span className="text-[10px] text-ink-faint">{t("量子 tier-2")}</span></span>
         </div>
+        <p className="mt-1 text-center text-[10px] leading-snug text-ink-faint">
+          {t("三條線是同一題的三層答案:金色 = 窮舉出的古典最優;藍色 = 純量子抽樣抽到的最佳合法航線;綠色 = 量子樣本經 top-512 古典修補後的最佳航線(hybrid)。共用的航段各彎一邊以便分辨;綠線與金線同路 = 修補後精確命中,藍線與金線同路 = 純量子直接命中。")}
+        </p>
         <Prose>
           {t("切換災害組合看路線翻轉:Busan → Hamburg 在地震情境走 Mundra 線、颱風情境走馬六甲線、戰爭情境(蘇伊士/紅海封鎖)整條翻到跨太平洋 + 北美陸橋。這批是富士通 1024 節點 FX700 平台的實測結果 —— 不是本站瀏覽器模擬。")}
         </Prose>

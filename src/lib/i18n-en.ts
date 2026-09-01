@@ -35,6 +35,8 @@ export const EN: Record<string, string> = {
   "荷莫茲海峽封鎖": "Strait of Hormuz blockade",
   "起點": "Origin",
   "終點": "Destination",
+  "三條線是同一題的三層答案:金色 = 窮舉出的古典最優;藍色 = 純量子抽樣抽到的最佳合法航線;綠色 = 量子樣本經 top-512 古典修補後的最佳航線(hybrid)。共用的航段各彎一邊以便分辨;綠線與金線同路 = 修補後精確命中,藍線與金線同路 = 純量子直接命中。": "Three lines, three tiers of the same instance: gold = exact classical optimum from enumeration; blue = best feasible route found by pure quantum sampling; green = best route after top-512 classical repair of the quantum samples (hybrid). Shared legs are bowed apart so they stay distinguishable; green on gold = exact hit after repair, blue on gold = exact hit by pure sampling.",
+  "只列出平台實測過的 15 條走廊": "Only the fifteen corridors measured on the platform are listed",
   "只列出有向路網可達的港口": "Only ports reachable on the directed network are listed",
   "非預設起終點為瀏覽器端衍生實例,未在比賽平台驗證;−97.4936、A* = 0.74 等已發表數字僅屬 Singapore → Los Angeles。":
     "A non-default endpoint pair is a browser-derived instance, never validated on the contest platform; published figures such as −97.4936 and A* = 0.74 belong to Singapore → Los Angeles only.",
@@ -463,8 +465,8 @@ export const EN: Record<string, string> = {
   // estimate-grade cost figures
   "每日延誤成本(estimate)":
     "Daily delay cost (estimate)",
-  "繞好望角 +12 天(estimate);2026-02 事實封鎖情境":
-    "+12 days round the Cape (estimate); the Feb 2026 de-facto closure scenario",
+  "繞好望角 +12 天(情境假設,estimate 級;非觀測值)":
+    "+12 days round the Cape (scenario assumption, estimate-grade; not an observation)",
   "成本怎麼算出來的":
     "How the cost is derived",
   "所有金額皆為 estimate 級,非官方統計":
@@ -537,8 +539,8 @@ export const EN: Record<string, string> = {
     "40-qubit scale milestone (July Grover — the failure, kept on purpose)",
   "可倫坡 / 蘇伊士走廊":
     "Colombo / Suez corridor",
-  "跨太平洋經巴拿馬":
-    "Trans-Pacific via Panama",
+  "跨太平洋經洛杉磯、紐約、安特衛普":
+    "Trans-Pacific via Los Angeles, New York and Antwerp",
   "直航停航":
     "Direct service suspended",
   "加高雄封港":
@@ -549,8 +551,8 @@ export const EN: Record<string, string> = {
   // report §8 quote; Figure 2 ratio attribution
   "報告 {s}":
     "Report {s}",
-  "建立在此引擎上的互動情境應用(靜態、離線快取的網頁示範器)是一種部署形態的示範;同一套介面也能由古典解法驅動,它的價值在決策流程,而不在量子的必要性。":
-    "The interactive scenario application built on this engine (a static, offline-cached web demonstrator) is a deployment-pattern illustration; the same interface could be served by a classical solver, and its value is the decision workflow, not quantum necessity.",
+  "瀏覽器內沒有任何量子計算發生,同一介面可由古典求解器提供服務——其價值在於決策工作流程(隨風險圖景改變的快取情境答案),而非任何量子必要性。":
+    "No quantum computation occurs in the browser, the same interface could be served by a classical solver, and its value is the decision workflow — cached scenario answers that change when the hazard picture does — rather than any quantum necessity.",
   "tier-1 純量子(戰爭開啟)":
     "tier-1 pure quantum (war on)",
   "tier-2 hybrid(top-512 修補)":
