@@ -304,11 +304,7 @@ function CorridorPicker() {
   const targets = useMemo(() => Array.from(new Set(v2Corridors.map((c) => c.target))), []);
   const has = (s: string, d: string) => v2Corridors.some((c) => c.source === s && c.target === d);
   const partners = (s: string) => v2Corridors.filter((c) => c.source === s).map((c) => c.target);
-  const opt = (names: string[], other: string, isSource: boolean) =>
-    names.map((n) => ({
-      value: n,
-      label: (isSource ? has(n, other) : has(other, n)) ? n : `${n}  ·  ${t("換另一端")}`,
-    }));
+  const opt = (names: string[]) => names.map((n) => ({ value: n, label: n }));
   const pickSource = (source: string) => {
     const ok = partners(source);
     setV2Corridor(source, ok.includes(params.v2Target) ? params.v2Target : ok[0]);
@@ -320,8 +316,8 @@ function CorridorPicker() {
   };
   return (
     <div className="mb-2">
-      <Select label={t("起點")} value={params.v2Source} options={opt(sources, params.v2Target, true)} onChange={pickSource} />
-      <Select label={t("終點")} value={params.v2Target} options={opt(targets, params.v2Source, false)} onChange={pickTarget}
+      <Select label={t("起點")} value={params.v2Source} options={opt(sources)} onChange={pickSource} />
+      <Select label={t("終點")} value={params.v2Target} options={opt(targets)} onChange={pickTarget}
         hint={t("平台實測 {n} 條走廊;選到未配對的港會自動跳到有實測的組合", { n: v2Corridors.length })} />
       <div className="mb-1 flex flex-wrap gap-1">
         {partners(params.v2Source).map((d) => (
