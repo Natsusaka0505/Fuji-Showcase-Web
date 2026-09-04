@@ -1,5 +1,5 @@
 {
-  "provenance": "Transcribed from the written report (Draft v2.0: §3.1 flagship, §3.2 / Figure 3 war flip, §4.3 quote). Job IDs are the platform's; the figures here are not re-derived from a platform export, so verify_report_40q only checks internal consistency.",
+  "provenance": "Transcribed from the written report (Draft v2.0: §3.1 flagship, §3.2 / Figure 3 war flip, §4.3 quote). Scenario route_changed re-checked 4 Sep 2026 against the platform result files: only A changes the route; B and C retain the Colombo route with a higher optimal cost. Job IDs are the platform's; the figures here are not re-derived from a platform export, so verify_report_40q only checks internal consistency.",
   "flagship": {
     "job": "7953691",
     "title_zh": "40 qubit QAOA 旗艦實驗",
@@ -26,15 +26,15 @@
         "gap": 0
       },
       {
-        "name_zh": "加高雄封港",
+        "name_zh": "A+高雄封港",
         "job": "7954358",
-        "route_changed": true,
+        "route_changed": false,
         "gap": 0
       },
       {
-        "name_zh": "加紅海中斷",
+        "name_zh": "A+紅海中斷",
         "job": "7954112",
-        "route_changed": true,
+        "route_changed": false,
         "gap": 0
       }
     ],

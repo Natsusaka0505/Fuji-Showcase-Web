@@ -79,7 +79,7 @@ export function QuantumPanel() {
                   <td className="py-1.5">
                     {sc.route_changed
                       ? <Chip label={t("改變")} tone="warn" />
-                      : <span className="text-[11px] text-ink-faint">{t("基準")}</span>}
+                      : <span className="text-[11px] text-ink-faint">{sc.name_zh === "基準情境" ? t("基準") : t("未變(維持可倫坡線)")}</span>}
                   </td>
                   <td className="py-1.5 text-right font-mono text-xs tabular-nums text-good">{sc.gap}</td>
                   <td className="py-1.5 pl-3 text-right font-mono text-[11px] text-ink-dim">{sc.job}</td>
@@ -89,7 +89,7 @@ export function QuantumPanel() {
           </table>
         </div>
         <Prose>
-          {t("四個情境的抽樣最佳解全部等於窮舉驗證的精確解,差距為 0;而推薦航線每次都隨風險改變。這說明 40 qubit 不只是「跑得動」,而是「答案正確、且會隨情境變動」。")}
+          {t("四個情境的抽樣最佳解全部等於窮舉驗證的精確解,差距為 0。推薦航線改變了一次:直航停航後最佳解改走新加坡 → 可倫坡 → 洛杉磯;這條線不經高雄也不經紅海,所以在高雄封港與紅海中斷下仍是最佳解,只有最佳成本上升(平台結果檔逐一核對)。這說明 40 qubit 不只是「跑得動」,而是「答案正確、且在情境要求時才改變」。")}
         </Prose>
       </Card>
 

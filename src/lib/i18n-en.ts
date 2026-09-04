@@ -526,8 +526,10 @@ export const EN: Record<string, string> = {
     "Changed",
   "基準":
     "Baseline",
-  "四個情境的抽樣最佳解全部等於窮舉驗證的精確解,差距為 0;而推薦航線每次都隨風險改變。這說明 40 qubit 不只是「跑得動」,而是「答案正確、且會隨情境變動」。":
-    "In all four scenarios the best sampled solution equals the brute-force-verified exact optimum, a gap of zero — and the recommended route changes every time the risk does. So 40 qubits is not merely running: the answers are correct and they respond to the scenario.",
+  "四個情境的抽樣最佳解全部等於窮舉驗證的精確解,差距為 0。推薦航線改變了一次:直航停航後最佳解改走新加坡 → 可倫坡 → 洛杉磯;這條線不經高雄也不經紅海,所以在高雄封港與紅海中斷下仍是最佳解,只有最佳成本上升(平台結果檔逐一核對)。這說明 40 qubit 不只是「跑得動」,而是「答案正確、且在情境要求時才改變」。":
+    "In all four scenarios the best sampled solution equals the brute-force-verified exact optimum, a gap of zero. The recommended route changed once: when the direct service was suspended the optimum moved to Singapore → Colombo → Los Angeles, and because that route touches neither Kaohsiung nor the Red Sea it stayed optimal under the Kaohsiung closure and the Red Sea disruption while the optimal cost rose (checked against the platform result files). So 40 qubits is not merely running: the answers are correct and they change only when the scenario demands it.",
+  "未變(維持可倫坡線)":
+    "Unchanged (Colombo route retained)",
   "戰爭風險一開,航線就翻轉":
     "Turn the war risk on and the route flips",
   "{s} → {tg}｜{q} qubits｜報告 {f}":
@@ -546,10 +548,10 @@ export const EN: Record<string, string> = {
     "Trans-Pacific via Los Angeles, New York and Antwerp",
   "直航停航":
     "Direct service suspended",
-  "加高雄封港":
-    "plus Kaohsiung port closure",
-  "加紅海中斷":
-    "plus Red Sea disruption",
+  "A+高雄封港":
+    "A + Kaohsiung port closure",
+  "A+紅海中斷":
+    "A + Red Sea disruption",
 
   // report §8 quote; Figure 2 ratio attribution
   "報告 {s}":
