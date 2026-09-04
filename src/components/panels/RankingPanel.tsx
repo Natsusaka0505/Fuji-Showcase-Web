@@ -103,6 +103,9 @@ export function RankingPanel() {
             ))}
           </ol>
         )}
+        {rows.some((r) => r.nEdges > r.routeIso.length - 1) && (
+          <Caveat>{t("航段數多於所列港口序列的項目,另含一段從起點出發又折返的來回(例如 SIN→HKG→SIN),解碼時省略;這類狀態滿足流量守恆,但不是另一條不同的航線。")}</Caveat>
+        )}
         {rankBy === "risk" && (
           <Caveat>
             {t("風險排序以已驗證的蒙地卡羅模型計算(每航線 ≤ 4,000 情境,取 CVaR{q})。營運分數與風險成本是兩套量綱,分開呈現、不合成單一指標。在「風險」分頁圈選受災港口,這裡的排序會跟著變。", { q: (params.risk.cvarQuantile * 100).toFixed(0) })}

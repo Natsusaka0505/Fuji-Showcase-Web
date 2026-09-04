@@ -3,7 +3,7 @@
  *
  * Nothing here is recomputed — 2^40 is a 16 TiB statevector — so this panel
  * plays back platform runs and keeps their claims apart. The August QAOA
- * flagship and the Figure 2 route flip are the report's actual 40q headlines;
+ * flagship and the Figure 3 route flip are the report's actual 40q headlines;
  * the July Grover run is kept because it failed, and showing that honestly is
  * worth more than hiding it.
  */
@@ -125,7 +125,7 @@ export function QuantumPanel() {
           {t("戰爭風險項關閉時,最佳航線走可倫坡 / 蘇伊士走廊;開啟後整條翻到跨太平洋經洛杉磯、紐約、安特衛普。權重不是憑空設的 —— 以蘇伊士運河 2024 年通行量崩跌校準,等效 10 天延誤。這重現了 2024 年航運業真實的改道決策。")}
         </Prose>
         <Caveat>
-          {t("兩個近似比皆為「戰爭風險開啟」那個實例的數值(報告 §5.2);tier-2 為 top-512 修補。平台獨立列舉的基準真值與建置期列舉一致到小數第四位(皆為 {c},full-QUBO 口徑)。", { c: P.ground_truth_cost.toFixed(4) })}
+          {t("兩個近似比皆為「戰爭風險開啟」那個實例的數值(報告 §3.2 與附錄 A);tier-2 為 top-512 修補。平台獨立列舉的基準真值與建置期列舉一致到小數第四位(皆為 {c},full-QUBO 口徑)。本卡片為 job 7955798 在距離模型 v3.1(巴拿馬修正前)下的實測結果;報告圖 3 畫的是同一翻轉在修正後距離模型下的精確最佳解,跨太平洋段改經巴拿馬到紐約而非經洛杉磯(報告 §3.4)。", { c: P.ground_truth_cost.toFixed(4) })}
         </Caveat>
       </Card>
 

@@ -181,12 +181,12 @@ export const EN: Record<string, string> = {
   "{n} 港、{m} 條 mode-edge 全網路｜走廊排行 {p} 條": "Full network: {n} ports, {m} mode edges | {p} ranked corridors",
   "分項齊全": "Full components",
   "冠軍 Colab benchmark 的 local reduced QUBO 家族:港口網路含漢堡、釜山、杜拜等 {n} 港,每對港口各有公路/鐵路/空運/海運 mode-edge。分項來自 bundle 的 graph_q9 原始表,絕對權重文件明載且經資料驗證:α = {a}(與原始欄位比值精確一致)、β = {b}(同)、γ₁/γ₂/γ₃ = {g1}/{g2}/{g3}(一致至 ~3%,聚合效應)。256 條邊逐一驗證 Σ分項 == 邊分數(3.9e-16,浮點極限)。":
-    "The champion Colab benchmark's local reduced QUBO family: a port network of {n} ports including Hamburg, Busan and Dubai, each pair carrying Road/Rail/Air/Sea mode edges. Components come from the bundle's raw graph_q9 tables, and the documented absolute weights are data-verified: α = {a} (exact ratio against the unweighted column), β = {b} (same), γ₁/γ₂/γ₃ = {g1}/{g2}/{g3} (within ~3%, an aggregation effect). All 256 edges verify Σcomponents == edge score to 3.9e-16 — the floating-point limit.",
+    "The proposal-aligned Colab benchmark's local reduced QUBO family: a port network of {n} ports including Hamburg, Busan and Dubai, each pair carrying Road/Rail/Air/Sea mode edges. Components come from the bundle's raw graph_q9 tables, and the documented absolute weights are data-verified: α = {a} (exact ratio against the unweighted column), β = {b} (same), γ₁/γ₂/γ₃ = {g1}/{g2}/{g3} (within ~3%, an aggregation effect). All 256 edges verify Σcomponents == edge score to 3.9e-16 — the floating-point limit.",
   "口徑:0.9281 屬 local reduced 模型,與 16q ising 的 −97.4936 是兩個不同模型,不可同圖並列。此網路(含漢堡/釜山/杜拜)與 ising 家族的九港(含高雄/可倫坡/蘇伊士)也是兩套不同路網。":
     "Framing: 0.9281 belongs to the local reduced model — a different model from the 16q ising's −97.4936; never chart them together. This network (Hamburg/Busan/Dubai) is also a different roster from the ising family's nine ports (Kaohsiung/Colombo/Suez).",
   "邊分項解剖": "Edge component anatomy",
   "冠軍走廊 8 條 mode-edge 的五分項(手抄自筆記本,已與 CSV 原檔逐位對帳)":
-    "Five components of the champion corridor's 8 mode edges (transcribed from the notebook, reconciled digit-by-digit with the raw CSV)",
+    "Five components of the proposal-aligned corridor's 8 mode edges (transcribed from the notebook, reconciled digit-by-digit with the raw CSV)",
   "長途的鹿特丹 → 洛杉磯段,γ₂ 港口與 γ₃ 天氣分項明顯比亞歐段厚 —— 這正是「風險已定價進邊分數」的具體樣貌。空運的 β 時間分項最薄、海運最厚,和 lead time(1.7 天 vs 51 天)一致。":
     "On the long Rotterdam → Los Angeles leg the γ₂ port and γ₃ weather components are visibly thicker than on the Asia–Europe leg — risk literally priced into the edge score. Air has the thinnest β time component and Sea the thickest, matching their lead times (1.7 vs 51 days).",
   "α/β/γ 權重滑桿 × 走廊排行": "α/β/γ weight sliders × corridor ranking",
@@ -264,6 +264,7 @@ export const EN: Record<string, string> = {
   "圈選受災港口:封鎖直接改變可行航線,颱風/地震改變風險排序":
     "Mark affected ports: a blockade changes the feasible routes directly; typhoon/quake change the risk ranking",
   "颱風": "Typhoon",
+  "戰爭": "War",
   "地震": "Quake",
   "封鎖(戰爭)": "Blockade (war)",
   "目錄期內無 M5+ 地震,無基線可升級": "No M5+ quakes in the catalog window — no baseline to escalate",
@@ -319,7 +320,7 @@ export const EN: Record<string, string> = {
   "記憶體隨 qubit 指數成長": "Memory grows exponentially with qubits",
   "每多一個 qubit,狀態向量翻倍": "Every extra qubit doubles the state vector",
   "16q 驗證規模": "16q verified scale",
-  "2024 冠軍": "2024 champion",
+  "2024 冠軍": "2024 first prize (TU Delft)",
   "本隊": "This team",
   "16q 即時 vs 40q 播放": "16q live vs 40q replay",
   "同一個 GAS 演算法,規模差 24 個 qubit": "The same GAS algorithm, 24 qubits apart",
@@ -422,8 +423,8 @@ export const EN: Record<string, string> = {
   "古典最優": "classical optimum",
   "量子 tier-1": "quantum tier-1",
   "量子 tier-2": "quantum tier-2",
-  "切換災害組合看路線翻轉:Busan → Hamburg 在地震情境走 Mundra 線、颱風情境走馬六甲線、戰爭情境(蘇伊士/紅海封鎖)整條翻到跨太平洋 + 北美陸橋。這批是富士通 1024 節點 FX700 平台的實測結果 —— 不是本站瀏覽器模擬。":
-    "Flip the hazard set and watch the route flip: Busan → Hamburg goes via Mundra under earthquakes, via the Malacca line under typhoons, and under war (Suez/Red Sea closure) swings entirely trans-Pacific onto the North-American land bridge. These are measured results from Fujitsu's 1024-node FX700 platform — not this site's browser simulation.",
+  "切換災害組合看路線翻轉:Busan → Hamburg 在地震情境走 Mundra 線、颱風情境走馬六甲線、戰爭情境(蘇伊士/紅海封鎖)整條翻到跨太平洋、經美東港口再到漢堡。這批是富士通 1024 節點 FX700 平台的實測結果 —— 不是本站瀏覽器模擬;距離模型為 v3.1(巴拿馬修正前),詳見報告 §3.4。":
+    "Flip the hazard set and watch the route flip: Busan → Hamburg goes via Mundra under earthquakes, via the Malacca line under typhoons, and under war (Suez/Red Sea closure) swings entirely trans-Pacific to a US East Coast port and on to Hamburg. These are measured results from Fujitsu's 1024-node FX700 platform — not this site's browser simulation; distance model v3.1 (before the Panama correction), see report Section 3.4.",
   "量子 vs 古典": "Quantum vs classical",
   "同一實例內對比;cost 為 full-QUBO 能量,跨實例不可比":
     "Compared within one instance; costs are full-QUBO energies and are never comparable across instances",
@@ -461,8 +462,8 @@ export const EN: Record<string, string> = {
     "tier-2 hybrid (quantum + classical repair)",
   "無":
     "None",
-  "tier-1 = 純量子抽樣的最佳合法航線;tier-2 = 量子抽樣再經古典修補的 hybrid 結果,兩者分開列示,不併入同一排行。近似比 = 該實例古典最優 cost ÷ 該解 cost,1.0 表示命中古典精確解。":
-    "tier-1 is the best feasible route pure-quantum sampling returned; tier-2 is the hybrid result after classical repair. They are listed separately and never merged into one ranking. The ratio is the instance's classical optimum cost divided by that solution's cost, so 1.0 means it matched the exact classical answer.",
+  "tier-1 = 純量子抽樣的最佳合法航線;tier-2 = 量子抽樣再經古典修補的 hybrid 結果,兩者分開列示,不併入同一排行。近似比 = 平台回報的 terms-only Ising 能量比(古典最優 ÷ 該解,未含每實例常數 offset),故比值接近 1 不代表路線成本接近;排行中的 cost 才是 full-QUBO 路線成本。1.0 表示命中古典精確解。":
+    "tier-1 is the best feasible route pure-quantum sampling returned; tier-2 is the hybrid result after classical repair. They are listed separately and never merged into one ranking. The ratio is the platform's terms-only Ising energy ratio (classical optimum ÷ that solution, before the per-instance constant offset), so a value near 1 does not mean the route costs are near; the costs in the rankings are full-QUBO route costs. 1.0 means it matched the exact classical answer.",
 
   // estimate-grade cost figures
   "每日延誤成本(estimate)":
@@ -553,14 +554,16 @@ export const EN: Record<string, string> = {
   // report §8 quote; Figure 2 ratio attribution
   "報告 {s}":
     "Report {s}",
-  "瀏覽器內沒有任何量子計算發生,同一介面可由古典求解器提供服務——其價值在於決策工作流程(隨風險圖景改變的快取情境答案),而非任何量子必要性。":
-    "No quantum computation occurs in the browser, the same interface could be served by a classical solver, and its value is the decision workflow — cached scenario answers that change when the hazard picture does — rather than any quantum necessity.",
+  "瀏覽器中不進行任何量子計算,同一介面也可由古典求解器提供;其價值在於決策流程。":
+    "No quantum computation occurs in the browser, and the same interface could be served by a classical solver; its value lies in the decision workflow.",
   "tier-1 純量子(戰爭開啟)":
     "tier-1 pure quantum (war on)",
   "tier-2 hybrid(top-512 修補)":
     "tier-2 hybrid (top-512 repair)",
-  "兩個近似比皆為「戰爭風險開啟」那個實例的數值(報告 §5.2);tier-2 為 top-512 修補。平台獨立列舉的基準真值與建置期列舉一致到小數第四位(皆為 {c},full-QUBO 口徑)。":
-    "Both ratios are for the war-enabled instance (report §5.2); tier-2 is top-512 repair. The platform's independently enumerated ground truth agreed with the build-time enumeration to four decimals ({c} for both, full-QUBO convention).",
+  "兩個近似比皆為「戰爭風險開啟」那個實例的數值(報告 §3.2 與附錄 A);tier-2 為 top-512 修補。平台獨立列舉的基準真值與建置期列舉一致到小數第四位(皆為 {c},full-QUBO 口徑)。本卡片為 job 7955798 在距離模型 v3.1(巴拿馬修正前)下的實測結果;報告圖 3 畫的是同一翻轉在修正後距離模型下的精確最佳解,跨太平洋段改經巴拿馬到紐約而非經洛杉磯(報告 §3.4)。":
+    "Both ratios are for the war-enabled instance (report Section 3.2 and Appendix A); tier-2 is top-512 repair. The platform's independently enumerated ground truth agreed with the build-time enumeration to four decimals ({c} for both, full-QUBO convention). This card shows the measured platform job 7955798 under distance model v3.1 (before the Panama correction); report Figure 3 draws the same flip as the exact optimum under the corrected model, where the trans-Pacific leg runs via Panama to New York rather than via Los Angeles (report Section 3.4).",
+  "航段數多於所列港口序列的項目,另含一段從起點出發又折返的來回(例如 SIN→HKG→SIN),解碼時省略;這類狀態滿足流量守恆,但不是另一條不同的航線。":
+    "An entry whose leg count exceeds its listed port sequence also contains a round trip out of the origin and back (e.g. SIN→HKG→SIN) that the decoder omits; such states satisfy flow balance but are not distinct sailings.",
   "tier-1 純量子":
     "tier-1 pure quantum",
   "tier-2 hybrid":

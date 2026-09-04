@@ -18,6 +18,12 @@ export type Locale = "zh" | "en" | "ja";
 
 const DICT: Record<Locale, Record<string, string> | null> = { zh: null, en: EN, ja: JA };
 const HTML_LANG: Record<Locale, string> = { zh: "zh-Hant", en: "en", ja: "ja" };
+// Browser-tab title per locale (server-rendered as zh, the default locale).
+const TITLE: Record<Locale, string> = {
+  zh: "Q-Logistics — 風險感知全球供應鏈路徑優化",
+  en: "Q-Logistics — Risk-aware global supply-chain routing",
+  ja: "Q-Logistics — リスク認識型グローバルサプライチェーン経路最適化",
+};
 
 const I18nContext = createContext<{ locale: Locale; setLocale: (l: Locale) => void } | null>(null);
 
@@ -30,14 +36,25 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       if (saved === "en" || saved === "zh" || saved === "ja") setLocaleState(saved);
     } catch {}
   }, []);
+  // Keep <html lang> and the tab title in step with the locale, including the
+  // localStorage restore above (which previously left lang at zh-Hant).
+  useEffect(() => {
+    document.documentElement.lang = HTML_LANG[locale];
+  }, [locale]);
   const setLocale = (l: Locale) => {
     setLocaleState(l);
     try {
       localStorage.setItem("q9-locale", l);
     } catch {}
-    document.documentElement.lang = HTML_LANG[l];
   };
-  return <I18nContext.Provider value={{ locale, setLocale }}>{children}</I18nContext.Provider>;
+  // React 19 hoists <title> into <head>; rendering it here lets the browser tab follow the
+  // locale (layout.tsx no longer sets a metadata title, so there is exactly one <title>).
+  return (
+    <I18nContext.Provider value={{ locale, setLocale }}>
+      <title>{TITLE[locale]}</title>
+      {children}
+    </I18nContext.Provider>
+  );
 }
 
 export function useI18n() {

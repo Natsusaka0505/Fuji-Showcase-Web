@@ -30,7 +30,7 @@ for (const f of walk(join(ROOT, "src/components"))) {
   }
 }
 // Strings rendered through t(variable): tab labels, component labels, data text.
-for (const k of ["地圖", "排行", "演算法", "風險", "聯運", "30港", "40q", "稽核"]) keys.add(k);
+for (const k of ["地圖", "排行", "演算法", "風險", "聯運", "30港", "40q", "稽核", "地震", "颱風", "戰爭"]) keys.add(k);
 for (const k of ["α 成本", "β 時間", "γ₁ 地緣", "γ₂ 港口", "γ₃ 天氣"]) keys.add(k);
 // report_40q.json ships display strings rendered through t(variable).
 const rep = read("report_40q.json");
